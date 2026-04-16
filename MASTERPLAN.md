@@ -19,6 +19,8 @@ Phase C: 사주 엔진 고도화         ░░░░░░░░░░   0% ⏳
 Phase D: G단계 기능 + 배포        ░░░░░░░░░░   0% ⏳
 ```
 
+> Phase A는 두 번의 세션에 걸쳐 완료: A1(Mock 환경), A2(파일 지속성), A3(멀티에이전트 하네스)
+
 ---
 
 ## Phase A — 에이전트 환경 구축 ✅ DONE
@@ -43,7 +45,18 @@ Phase D: G단계 기능 + 배포        ░░░░░░░░░░   0% ⏳
   - [x] Auto-memory 파일 작성
   - [x] `.claude/hooks/session-start.sh` 업데이트
 
-**DoD A단계:** `npm run dev` → localhost:3000 정상, 모든 페이지 200 OK, API 필터링 동작
+- [x] A3. 멀티 에이전트 하네스 구축 (plan-agents.md Phase A 기준)
+  - [x] `CLAUDE.md` 멀티에이전트 섹션 추가 — 5개 에이전트 역할/권한/금지사항 정의
+  - [x] `.claude/rules/ux-design.md` 생성 — Progressive Disclosure, 모바일 UX 기준
+  - [x] `.claude/rules/saju-domain-deep.md` 생성 — 지장간, 용신, 합충, 절기 정밀화
+  - [x] `.claude/rules/performance.md` 생성 — Core Web Vitals, 번들 최적화
+  - [x] `.claude/rules/testing-strategy.md` 생성 — 품질 게이트, 테스트 기준
+  - [x] `.claude/hooks/stop-gate.sh` 강화 — UX 일관성 체크 추가 (use client 검증, 터치 타겟 경고)
+  - [x] `~/.claude/plugins/myeongdang/skills/saju-accuracy-checker/SKILL.md` 생성
+  - [x] `~/.claude/plugins/myeongdang/skills/ux-flow-reviewer/SKILL.md` 생성
+  - [x] `~/.claude/plugins/myeongdang/skills/deployment-readiness/SKILL.md` 생성
+
+**DoD A단계:** `npm run dev` → localhost:3000 정상, 모든 페이지 200 OK, API 필터링 동작, 멀티에이전트 하네스 완비
 
 ---
 

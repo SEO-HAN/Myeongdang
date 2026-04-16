@@ -62,6 +62,41 @@ if [ "$ENGINE_RECENTLY_MODIFIED" = true ]; then
   CONTEXT+="   npx ts-node -P /tmp/tsconfig_test.json lib/saju/engine.test.ts\n\n"
 fi
 
+# ── 4. UX 일관성 체크 ────────────────────────────────────────
+# Client Component에 'use client' 누락 여부 검사
+MISSING_USE_CLIENT=()
+while IFS= read -r -d '' file; do
+  # useState, useEffect, useRef, useCallback, useMemo 사용하면 'use client' 필요
+  if grep -qE "useState|useEffect|useRef|useCallback|useMemo|useRouter|usePathname|useSearchParams" "$file" 2>/dev/null; then
+    if ! head -3 "$file" | grep -q "'use client'"; then
+      MISSING_USE_CLIENT+=("${file#$PROJECT_DIR/}")
+    fi
+  fi
+done < <(find "$PROJECT_DIR/components" "$PROJECT_DIR/app" -name "*.tsx" \
+  -not -path "*/node_modules/*" -not -path "*/.next/*" \
+  -not -name "layout.tsx" -not -name "error.tsx" \
+  -print0 2>/dev/null)
+
+if [ ${#MISSING_USE_CLIENT[@]} -gt 0 ]; then
+  SHOULD_BLOCK=true
+  CONTEXT+="🔴 'use client' 누락된 클라이언트 컴포넌트:\n"
+  for f in "${MISSING_USE_CLIENT[@]}"; do
+    CONTEXT+="  - $f\n"
+  done
+  CONTEXT+="→ 파일 첫 줄에 'use client'를 추가하세요.\n\n"
+fi
+
+# ── 5. 모바일 터치 타겟 크기 경고 (44px 미만 버튼 감지) ─────────
+# h-8(32px) 이하 단독 버튼 사용 경고 (w-8/h-8 = 32px)
+SMALL_TOUCH_COUNT=$(grep -r "className=\".*\bh-8\b\|className=\".*\bh-6\b\|className=\".*\bh-7\b" \
+  "$PROJECT_DIR/components" "$PROJECT_DIR/app" \
+  --include="*.tsx" -l 2>/dev/null | wc -l | tr -d ' ')
+
+if [ "$SMALL_TOUCH_COUNT" -gt 0 ]; then
+  CONTEXT+="📱 터치 타겟 크기 경고: h-8 이하 버튼 ${SMALL_TOUCH_COUNT}개 파일에서 발견\n"
+  CONTEXT+="   모바일 UX 기준 44px(h-11) 이상 권장 (클릭 영역 확인 필요)\n\n"
+fi
+
 # ── 블록 또는 컨텍스트 제공 ──────────────────────────────────
 if [ "$SHOULD_BLOCK" = true ]; then
   printf '%s' "$CONTEXT" | jq -Rs '{

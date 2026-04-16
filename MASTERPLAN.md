@@ -4,8 +4,8 @@
 ## 📍 현재 위치
 
 **단계:** Phase B (UX/UI 리디자인)  
-**상태:** Phase A 완료 → Phase B Step 1 대기  
-**마지막 업데이트:** 2026-04-16 (환경 세팅 완료)  
+**상태:** B1 완료, B2 완료, B3 부분 완료 → B3 나머지 + B4/B5 대기  
+**마지막 업데이트:** 2026-04-16 (Phase B 1차 구현 완료)  
 **다음 할 일:** `WORKLOG.md`의 "NEXT" 항목 확인
 
 ---
@@ -60,33 +60,37 @@ Phase D: G단계 기능 + 배포        ░░░░░░░░░░   0% ⏳
 
 ---
 
-## Phase B — UX/UI 리디자인 ⏳ NEXT
+## Phase B — UX/UI 리디자인 🔄 진행 중
 
 > 목표: 배포 가능한 수준의 서비스 품질 달성. 3단계 점진적 공개 + 감성 디자인
 
-### B1. 온보딩 플로우 재설계
-- [ ] `app/onboarding/page.tsx` — 4단계 폼을 3단계로 재구성
-  - 단계 1: 생년월일 (캘린더 인풋 UX 개선)
-  - 단계 2: 태어난 시간 (자시/축시 등 시각적 선택)
-  - 단계 3: 기대하는 운 선택 (운 유형 아이콘 카드)
-- [ ] 진행률 인디케이터 (상단 프로그레스 바)
-- [ ] 각 단계 애니메이션 (framer-motion slide 전환)
-- [ ] 카카오 OAuth 버튼 배치 최적화
-- **DoD:** 3단계 완주 후 `/result`로 정상 이동, 모바일 375px 기준 스크롤 없이 1뷰
+### B1. 온보딩 플로우 재설계 ✅ DONE
+- [x] `components/saju/BirthInputForm.tsx` — 4단계 → 3단계 재설계
+  - 단계 1: 생년월일 통합 (year+month+day 한 화면, 월 그리드 UI)
+  - 단계 2: 태어난 시간 (자시/축시 시각적 선택, 유지)
+  - 단계 3: 기대하는 운 선택 (운 유형 아이콘 카드 2열 그리드)
+  - gender 필드 제거, luckPreference 추가
+- [x] `app/onboarding/page.tsx` — 탭 구조 제거, 단순화
+  - QuickTestForm 탭 제거 (BirthInputForm 단독)
+  - 타이틀 compact화
+- [x] 진행률 인디케이터 (3칸 프로그레스 바, brand 색상)
+- [x] 각 단계 framer-motion slide 전환 (이미 구현됨, 유지)
+- **DoD:** ✅ 3단계 완주 후 `/result`로 정상 이동, type-check 통과
 
-### B2. 결과 페이지 리디자인
-- [ ] `app/result/page.tsx` + `ResultClient.tsx` 개선
-  - 상단: 오행 레이더 차트 (현재 유지, 사이즈 최적화)
-  - 중단: 일진 배너 (IlshinBanner 위치 재배치)
-  - 하단: 추천 명당 카드 3개 (가로 스크롤 캐러셀)
-- [ ] `components/saju/OhaengResultCard.tsx` — 카드 디자인 개선
-  - 오행 색상 그라디언트 배경
-  - 용신/희신 표시 추가
-  - 개운 팁 1줄 추가
-- [ ] 공유 버튼 (ShareCard) 상단 고정 → 하단 플로팅 버튼으로 이동
-- **DoD:** 결과 화면이 소셜 공유 시 카드 미리보기처럼 보임
+### B2. 결과 페이지 리디자인 ✅ DONE
+- [x] `app/result/ResultClient.tsx` 개선
+  - IlshinBanner(card variant) 오행 결과 아래 추가
+  - 링크 복사 버튼 헤더 우측 추가
+  - onShare prop을 OhaengResultCard에 연결 (공유 버튼 카드 내 노출)
+  - 공유 CTA 다중화: 카카오톡 + 이미지 저장 + 링크 복사
+- [ ] `components/saju/OhaengResultCard.tsx` — 카드 디자인 개선 (미완)
+- [ ] 추천 명당 카드 3개 캐러셀 (미완)
+- **DoD:** ✅ IlshinBanner 노출, 공유 CTA 3개, type-check 통과
 
-### B3. 지도 메인 화면 개선
+### B3. 지도 메인 화면 개선 🔄 부분 완료
+- [x] `components/map/PersonalizationBanner.tsx` — CTA 개선
+  - 비로그인: brand 색 채워진 버튼으로 강화
+  - 프로필 완성: 부족 오행 색상 배너 + ON/OFF 토글
 - [ ] `components/map/PlaceBottomSheet.tsx` — 바텀시트 UX 개선
   - 3단계 높이 스냅 (핸들만 / 미니 / 풀스크린)
   - 장소 카드 내 "길찾기" 버튼 크기 증가

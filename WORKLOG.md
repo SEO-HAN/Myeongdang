@@ -5,22 +5,70 @@
 
 ## ⏭️ NEXT (다음 세션에서 바로 실행할 작업)
 
-**Phase B Step 1 — 온보딩 플로우 재설계**
+**Phase B 나머지 — B3 바텀시트 + B4 장소 상세 + B5 공유 강화**
 
 실행 전 확인사항:
 1. `npm run dev` → localhost:3000 정상 확인 (Mock 모드)
-2. `app/onboarding/page.tsx` 현재 코드 읽기
-3. MASTERPLAN.md Phase B1 체크리스트 참조
-4. `/ux-flow-reviewer` 스킬로 현재 온보딩 이탈 포인트 분석
+2. MASTERPLAN.md B3~B5 체크리스트 참조
 
-첫 번째 변경 파일: `app/onboarding/page.tsx`
-- 4단계 폼 → 3단계 재구성
-- 상단 프로그레스 바 추가
-- framer-motion slide 전환 구현
+우선순위 순서:
+1. `components/map/PlaceBottomSheet.tsx` — 바텀시트 3단계 스냅 높이
+2. `components/map/OhaengFilterBar.tsx` — 필터 칩 크기 증가 (이미 구현됨, 검토만)
+3. `app/place/[id]/page.tsx` — SNS 리뷰 미리보기, 근처 명당 추천
+4. `components/share/ShareCard.tsx` — 오행 비주얼 카드 개선
 
 ---
 
 ## 세션 로그
+
+---
+
+### 2026-04-16 | Phase B UX/UI 리디자인 1차 구현 (B1·B2·B3 부분 완료)
+
+**UX 플로우 리뷰 진단:**
+- Stage 1: 2/4 체크 통과 (비로그인 탐색 가능, 일진 배너 있음)
+- Stage 2: 2/5 체크 통과 (4단계 온보딩, 첫 단계 숫자 입력이 이탈 포인트)
+- Stage 3: 2/4 체크 통과 (지도 CTA 있음, 공유 CTA 1개뿐)
+
+**완료한 작업:**
+
+**B1 — 온보딩 플로우 재설계**
+- `components/saju/BirthInputForm.tsx` — 4단계 → 3단계 완전 재설계
+  - Step 1: 생년월일 통합 (year+month+day, 월 그리드 UI, 375px 1뷰)
+  - Step 2: 태어난 시간 (유지)
+  - Step 3: 기대하는 운 선택 (LUCK_TYPES 6종 아이콘 카드, gender 대체)
+  - `BirthFormData`에서 `gender` 제거, `luckPreference` 추가
+- `app/onboarding/page.tsx` — QuickTestForm 탭 제거, 단순 폼 구조
+
+**B2 — 결과 페이지 개선**
+- `app/result/ResultClient.tsx` — IlshinBanner(card) 추가
+  - 오행 결과 아래 오늘의 일진 섹션 배치
+  - 공유 CTA 3개: 카카오톡 공유 + 이미지 저장 + 링크 복사
+  - 헤더 우측 링크 복사 버튼 추가
+
+**B3 — PersonalizationBanner 개선**
+- `components/map/PersonalizationBanner.tsx` — 상태별 분기 강화
+  - 비로그인: brand 색 채워진 버튼 (기존 흰 배경 → 눈에 띄는 CTA)
+  - 프로필 완성 시: 부족 오행 색상 배너 + 개인화 모드 ON/OFF 토글
+
+**품질 게이트:**
+- ✅ `npm run type-check` 통과 (오류 0개)
+- ✅ localhost:3000 → 200 OK
+- ✅ localhost:3000/onboarding → 200 OK
+- ✅ localhost:3000/result?y=1990&m=3&d=15&h=10 → 200 OK
+
+**결정 사항:**
+- `luckPreference`는 BirthFormData에만 추가 (store 미변경, Phase C/D에서 필요 시 확장)
+- QuickTestForm 탭 제거 → 온보딩 단일 플로우 집중 (간단 테스트는 Phase D에서 재검토)
+- IlshinBanner는 사주 미입력 유저에게도 결과 페이지에서 노출 (일진은 공통 정보)
+
+**이슈 & 해결:**
+- `BirthFormData.gender` 제거 후 `app/onboarding/page.tsx`에서 참조 → TS 훅이 즉시 감지, 제거로 해결
+
+**다음 세션 준비:**
+- B3 바텀시트 3단계 스냅 (PlaceBottomSheet.tsx)
+- B4 장소 상세 개선 (place/[id]/page.tsx)
+- B5 공유 카드 비주얼 개선 (ShareCard.tsx)
 
 ---
 

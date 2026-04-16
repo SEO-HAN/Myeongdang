@@ -1,10 +1,12 @@
 /**
- * ResultClient — 결과 페이지 인터랙티브 클라이언트 파트 (Phase B2 리디자인)
+ * ResultClient — 결과 페이지 인터랙티브 클라이언트 파트 (DESIGN.md 기반 리디자인)
  *
  * 개선 사항:
- *  - IlshinBanner(card) 추가 → 오늘 일진과 결과 연결
- *  - onShare를 OhaengResultCard에 연결 → 내 명당 찾기 옆 공유 버튼
- *  - 카카오톡 공유 + 링크 복사 CTA 다중화
+ *  - 다크 히어로: hero-dark 클래스 (따뜻한 인디고, generic slate 제거)
+ *  - 헤딩: Noto Serif KR
+ *  - UI 아이콘: SVG (이모지 chrome 제거)
+ *  - 섹션 라벨: section-label 클래스 + section-divider
+ *  - 카드 영역: parchment 배경
  */
 'use client'
 
@@ -22,21 +24,67 @@ interface ResultClientProps {
   result: SajuResult
 }
 
+// ── SVG 아이콘 ────────────────────────────────────────────────
+function ChevronLeftIcon() {
+  return (
+    <svg viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
+      <path
+        fillRule="evenodd"
+        d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z"
+        clipRule="evenodd"
+      />
+    </svg>
+  )
+}
+
+function LinkIcon() {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-5 h-5">
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244"
+      />
+    </svg>
+  )
+}
+
+function CheckIcon() {
+  return (
+    <svg viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
+      <path
+        fillRule="evenodd"
+        d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z"
+        clipRule="evenodd"
+      />
+    </svg>
+  )
+}
+
+function MapPinIcon() {
+  return (
+    <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+      <path
+        fillRule="evenodd"
+        d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 103 9c0 3.492 1.698 5.988 3.355 7.584a13.731 13.731 0 002.273 1.765 11.842 11.842 0 00.976.544l.062.029.018.008.006.003zM10 11.25a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z"
+        clipRule="evenodd"
+      />
+    </svg>
+  )
+}
+
 export default function ResultClient({ result }: ResultClientProps) {
   const router  = useRouter()
   const setSaju = useUserStore((s) => s.setSaju)
   const [copied, setCopied] = useState(false)
 
-  // Zustand에 결과 동기화 (공유 URL로 직접 접근한 경우 대비)
   useEffect(() => {
     setSaju(result.input)
     useUserStore.persist.rehydrate()
   }, [setSaju, result.input])
 
-  // 링크 복사 핸들러
   const handleCopyLink = useCallback(() => {
-    const url = window.location.href
-    navigator.clipboard.writeText(url).then(() => {
+    navigator.clipboard.writeText(window.location.href).then(() => {
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     })
@@ -46,93 +94,117 @@ export default function ResultClient({ result }: ResultClientProps) {
   const weakColor   = OHAENG_COLOR[primaryWeak]
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 to-slate-900 pb-safe">
-      {/* 헤더 */}
+    <div className="min-h-screen hero-dark pb-safe flex flex-col">
+
+      {/* ── 헤더 ──────────────────────────────────────────── */}
       <header className="flex items-center justify-between px-4 pt-safe pt-4 pb-4">
         <button
           onClick={() => router.back()}
-          className="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 text-white"
+          className="icon-btn-dark"
           aria-label="뒤로"
         >
-          ←
+          <ChevronLeftIcon />
         </button>
-        <p className="text-white font-bold">오행 분석 결과</p>
-        {/* 링크 복사 버튼 */}
+
+        <p
+          className="text-white font-semibold text-base"
+          style={{ fontFamily: 'Noto Serif KR, Georgia, serif' }}
+        >
+          오행 분석 결과
+        </p>
+
         <button
           onClick={handleCopyLink}
-          className="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 text-white text-base"
+          className="icon-btn-dark"
           aria-label="링크 복사"
         >
-          {copied ? '✓' : '🔗'}
+          {copied ? <CheckIcon /> : <LinkIcon />}
         </button>
       </header>
 
-      {/* 임팩트 헤더 — "나는 🔥 화가 부족한 사람" */}
+      {/* ── 다크 히어로 — "나는 X가 부족한 사람" ─────────── */}
       <motion.div
-        className="text-center px-6 py-6"
-        initial={{ opacity: 0, y: 20 }}
+        className="text-center px-6 py-6 flex-shrink-0"
+        initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.45, ease: [0.25, 0.46, 0.45, 0.94] }}
       >
+        {/* 오행 이모지 — 의미있는 도메인 콘텐츠이므로 이모지 유지 */}
         <motion.div
-          className="text-6xl mb-4"
-          animate={{ scale: [1, 1.12, 1] }}
-          transition={{ delay: 0.3, duration: 0.5 }}
+          className="text-6xl mb-4 leading-none"
+          animate={{ scale: [1, 1.10, 1] }}
+          transition={{ delay: 0.35, duration: 0.5, ease: 'easeOut' }}
         >
           {OHAENG_EMOJI[primaryWeak]}
         </motion.div>
-        <h1 className="text-2xl font-bold text-white mb-2">
+
+        <h1
+          className="text-2xl font-semibold mb-2 leading-snug break-keep"
+          style={{
+            fontFamily: 'Noto Serif KR, Georgia, serif',
+            color: '#F0EAD8',
+          }}
+        >
           나는{' '}
           <span style={{ color: weakColor.hex }}>
-            {result.weakOhaeng.map((o) => `${OHAENG_EMOJI[o]} ${o}`).join(', ')}
+            {result.weakOhaeng.map((o) => `${OHAENG_EMOJI[o as Ohaeng]} ${o}`).join(', ')}
           </span>
-          가<br />부족한 사람입니다
+          가{'\n'}부족한 사람입니다
         </h1>
-        <p className="text-sm text-white/60 mt-2">
+
+        <p className="text-sm mt-2" style={{ color: 'rgba(160,152,149,0.8)' }}>
           {result.pillars.year.cheonganKr}{result.pillars.year.jijiKr}년생
         </p>
       </motion.div>
 
-      {/* 결과 카드 영역 */}
-      <div className="bg-white rounded-t-3xl px-4 pt-6 pb-8">
+      {/* ── 흰 카드 섹션 — 바텀시트 스타일 ──────────────── */}
+      <div
+        className="flex-1 bg-parchment rounded-t-sheet px-4 pt-6 pb-8"
+        style={{ boxShadow: '0 -4px 40px rgba(0,0,0,0.20)' }}
+      >
 
-        {/* 오행 분석 카드 (레이더 차트 + CTA 포함) */}
+        {/* 오행 분석 카드 */}
         <OhaengResultCard result={result} onShare={handleCopyLink} />
 
-        <div className="h-px bg-gray-100 my-5" />
+        <div className="section-divider" />
 
-        {/* 오늘의 일진 — 오늘 내 운세와 연결 */}
+        {/* 오늘의 일진 */}
         <div className="mb-5">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">
-            📅 오늘의 일진
-          </p>
+          <div className="flex items-center gap-1.5 mb-3">
+            <span style={{ color: '#C9973A' }}><MapPinIcon /></span>
+            <p className="section-label">오늘의 일진</p>
+          </div>
           <IlshinBanner variant="card" defaultExpanded={false} />
         </div>
 
-        <div className="h-px bg-gray-100 my-5" />
+        <div className="section-divider" />
 
         {/* 공유 섹션 */}
         <div className="mb-4">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3 text-center">
-            친구에게 공유하고 같이 명당 찾기 🗺️
+          <p className="section-label text-center mb-3">
+            친구와 함께 명당 찾기
           </p>
           <ShareCardButton result={result} />
 
-          {/* 링크 복사 */}
           <button
             onClick={handleCopyLink}
-            className="w-full mt-2 py-3 rounded-2xl border border-gray-200 text-sm text-gray-500 font-medium hover:bg-gray-50 transition-colors"
+            className="w-full mt-2 py-3.5 rounded-btn border border-gray-200 text-sm font-medium transition-colors cursor-pointer flex items-center justify-center gap-2"
+            style={{ color: copied ? '#C9973A' : '#6E6A7A' }}
           >
-            {copied ? '✅ 링크가 복사됐어요!' : '🔗 링크 복사하기'}
+            {copied
+              ? <><CheckIcon /><span>링크가 복사됐어요</span></>
+              : <><LinkIcon /><span>링크 복사하기</span></>
+            }
           </button>
         </div>
 
         {/* 재분석 */}
         <button
           onClick={() => router.push('/onboarding')}
-          className="w-full py-3 text-sm text-gray-400 text-center"
+          className="w-full py-3 text-sm text-center cursor-pointer transition-colors"
+          style={{ color: '#A09AA8' }}
         >
-          다시 분석하기 →
+          다시 분석하기
         </button>
       </div>
     </div>

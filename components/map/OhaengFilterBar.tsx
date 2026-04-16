@@ -73,7 +73,7 @@ export default function OhaengFilterBar() {
           <button
             onClick={resetFilter}
             className={cn(
-              'flex-shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium shadow-sm transition-all duration-150',
+              'flex-shrink-0 flex items-center gap-1 px-3.5 py-2 rounded-full text-xs font-medium shadow-sm transition-all duration-150',
               isAllActive
                 ? 'bg-gray-800 text-white shadow-md scale-105'
                 : 'bg-white text-gray-600 border border-gray-200',
@@ -93,9 +93,9 @@ export default function OhaengFilterBar() {
                 key={o}
                 onClick={() => toggleOhaeng(o)}
                 className={cn(
-                  'flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm transition-all duration-150',
+                  'flex-shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-semibold shadow-sm transition-all duration-150',
                   isActive
-                    ? 'shadow-md scale-105 text-white'
+                    ? 'shadow-md scale-105 text-white ring-2 ring-offset-1'
                     : 'bg-white border border-gray-200 text-gray-700',
                 )}
                 style={isActive

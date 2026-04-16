@@ -18,7 +18,9 @@ import ShareCardButton from '@/components/share/ShareCard'
 import IlshinBanner from '@/components/saju/IlshinBanner'
 import { useUserStore } from '@/store/user-store'
 import { OHAENG_EMOJI, OHAENG_COLOR } from '@/lib/saju/types'
+import { buildSajuNarrative, buildYongshinNarrative } from '@/lib/saju/explain'
 import type { SajuResult, Ohaeng } from '@/lib/saju/types'
+import type { ScoredPlace } from '@/lib/saju/recommend'
 
 interface ResultClientProps {
   result: SajuResult
@@ -74,14 +76,31 @@ function MapPinIcon() {
 }
 
 export default function ResultClient({ result }: ResultClientProps) {
-  const router  = useRouter()
-  const setSaju = useUserStore((s) => s.setSaju)
-  const [copied, setCopied] = useState(false)
+  const router    = useRouter()
+  const setSaju   = useUserStore((s) => s.setSaju)
+  const userName  = useUserStore((s) => s.userName)
+  const [copied, setCopied]     = useState(false)
+  const [topPlaces, setTopPlaces] = useState<ScoredPlace[]>([])
+
+  const narrative         = buildSajuNarrative(result, userName ?? undefined)
+  const yongshinNarrative = buildYongshinNarrative(result, userName ?? undefined)
 
   useEffect(() => {
     setSaju(result.input)
     useUserStore.persist.rehydrate()
   }, [setSaju, result.input])
+
+  // 추천 명당 TOP3 fetch
+  useEffect(() => {
+    const { year, month, day, hour } = result.input
+    const url = `/api/recommend?y=${year}&m=${month}&d=${day}${hour !== undefined ? `&h=${hour}` : ''}`
+    fetch(url)
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.recommendations) setTopPlaces(data.recommendations.slice(0, 3))
+      })
+      .catch(() => {}) // 추천 실패해도 페이지 동작
+  }, [result.input])
 
   const handleCopyLink = useCallback(() => {
     navigator.clipboard.writeText(window.location.href).then(() => {
@@ -138,6 +157,13 @@ export default function ResultClient({ result }: ResultClientProps) {
           {OHAENG_EMOJI[primaryWeak]}
         </motion.div>
 
+        {/* 이름 헤더 */}
+        {userName && (
+          <p className="text-sm font-medium mb-2" style={{ color: '#C9973A' }}>
+            {userName}님의 사주
+          </p>
+        )}
+
         <h1
           className="text-2xl font-semibold mb-2 leading-snug break-keep"
           style={{
@@ -155,6 +181,11 @@ export default function ResultClient({ result }: ResultClientProps) {
         <p className="text-sm mt-2" style={{ color: 'rgba(160,152,149,0.8)' }}>
           {result.pillars.year.cheonganKr}{result.pillars.year.jijiKr}년생
         </p>
+
+        {/* 서사 텍스트 */}
+        <p className="text-sm mt-3 leading-relaxed px-2" style={{ color: 'rgba(240,234,216,0.75)' }}>
+          {narrative}
+        </p>
       </motion.div>
 
       {/* ── 흰 카드 섹션 — 바텀시트 스타일 ──────────────── */}
@@ -165,6 +196,71 @@ export default function ResultClient({ result }: ResultClientProps) {
 
         {/* 오행 분석 카드 */}
         <OhaengResultCard result={result} onShare={handleCopyLink} />
+
+        {/* 용신 섹션 */}
+        <div className="mb-4 p-4 rounded-2xl" style={{
+          background: OHAENG_COLOR[result.yongshin].bg,
+          border: `1.5px solid ${OHAENG_COLOR[result.yongshin].hex}33`,
+        }}>
+          <p className="text-[11px] font-semibold uppercase tracking-wider mb-1.5"
+            style={{ color: OHAENG_COLOR[result.yongshin].hex }}>
+            오늘 당신에게 필요한 기운
+          </p>
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-2xl">{OHAENG_EMOJI[result.yongshin]}</span>
+            <span className="font-bold text-lg" style={{ color: OHAENG_COLOR[result.yongshin].text }}>
+              {result.yongshin} 기운
+            </span>
+            <span className="text-xs px-2 py-0.5 rounded-full font-medium"
+              style={{ background: OHAENG_COLOR[result.yongshin].hex + '22', color: OHAENG_COLOR[result.yongshin].hex }}>
+              용신
+            </span>
+          </div>
+          <p className="text-sm leading-relaxed" style={{ color: OHAENG_COLOR[result.yongshin].text }}>
+            {yongshinNarrative}
+          </p>
+        </div>
+
+        {/* 추천 명당 TOP3 */}
+        {topPlaces.length > 0 && (
+          <>
+            <div className="section-divider" />
+            <div className="mb-5">
+              <div className="flex items-center gap-1.5 mb-3">
+                <span style={{ color: '#C9973A' }}><MapPinIcon /></span>
+                <p className="section-label">나만의 명당 TOP {topPlaces.length}</p>
+              </div>
+              <div className="flex flex-col gap-2.5">
+                {topPlaces.map(({ place, score, matchReasons }, i) => {
+                  const ohaeng = (place.ohaeng[0] ?? '목') as Ohaeng
+                  const color = OHAENG_COLOR[ohaeng]
+                  return (
+                    <a key={place.id} href={`/place/${place.id}`}
+                      className="flex items-center gap-3 p-3.5 rounded-2xl transition-colors"
+                      style={{
+                        background: '#fff',
+                        border: '1px solid rgba(0,0,0,0.06)',
+                        boxShadow: 'rgba(0,0,0,0.02) 0px 0px 0px 1px, rgba(0,0,0,0.06) 0px 4px 16px',
+                      }}>
+                      <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0"
+                        style={{ background: color.bg }}>
+                        {OHAENG_EMOJI[ohaeng]}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-sm text-gray-900 truncate">{place.name}</p>
+                        <p className="text-xs text-gray-500 truncate mt-0.5">{matchReasons[0]}</p>
+                      </div>
+                      <div className="flex flex-col items-end shrink-0">
+                        <span className="text-xs font-bold" style={{ color: color.hex }}>{score}점</span>
+                        <span className="text-[10px] text-gray-400">#{i + 1}</span>
+                      </div>
+                    </a>
+                  )
+                })}
+              </div>
+            </div>
+          </>
+        )}
 
         <div className="section-divider" />
 

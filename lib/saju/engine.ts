@@ -19,10 +19,15 @@ import {
   type Ohaeng,
   type Cheongan,
   type Jiji,
+  type HapChungItem,
   CHEONGAN_LIST,
   CHEONGAN_KR,
   JIJI_LIST,
   JIJI_KR,
+  JIJANGGAN,
+  CHEONGAN_HAP,
+  JIJI_CHUNG,
+  SAMHAP,
 } from './types';
 
 // ─────────────────────────────────────────────
@@ -281,36 +286,156 @@ function emptyOhaengCount(): OhaengCount {
   return { 목: 0, 화: 0, 토: 0, 금: 0, 수: 0 };
 }
 
+function emptyOhaengFloat(): Record<Ohaeng, number> {
+  return { 목: 0, 화: 0, 토: 0, 금: 0, 수: 0 };
+}
+
 /**
- * 4기둥에서 오행 개수 카운팅
- * 시주가 없으면 6글자(천간3+지지3) 기준
+ * 4기둥에서 오행 가중 합산 (지장간 반영)
+ * 천간: 1.0 가중치
+ * 지지: 지장간 비율 가중 합산 (ratio/100)
  */
-function countOhaeng(pillars: {
+function countOhaengWeighted(pillars: {
   year: Pillar;
   month: Pillar;
   day: Pillar;
   hour: Pillar | null;
-}): OhaengCount {
-  const count = emptyOhaengCount();
+}): Record<Ohaeng, number> {
+  const count = emptyOhaengFloat();
   const activePillars = [pillars.year, pillars.month, pillars.day];
   if (pillars.hour) activePillars.push(pillars.hour);
 
   for (const pillar of activePillars) {
-    count[pillar.cheonganOhaeng]++;
-    count[pillar.jijiOhaeng]++;
+    // 천간 1.0 가중치
+    count[pillar.cheonganOhaeng] += 1.0;
+    // 지지: 지장간 비율 합산
+    const jijanggan = JIJANGGAN[pillar.jiji];
+    for (const { cheongan, ratio } of jijanggan) {
+      const ohaeng = CHEONGAN_OHAENG[cheongan];
+      count[ohaeng] += ratio / 100;
+    }
   }
   return count;
 }
 
 /**
  * 오행 개수를 0~100 강도로 정규화
- * 전체 글자 수 대비 각 오행 비율 × 100
+ * 실제 가중치 합계 기준 각 오행 비율 × 100
  */
-function normalizeOhaeng(count: OhaengCount, totalGlyphs: number): Record<Ohaeng, number> {
+function normalizeOhaeng(count: Record<Ohaeng, number>, total: number): Record<Ohaeng, number> {
   const result = {} as Record<Ohaeng, number>;
   for (const o of OHAENG_LIST) {
-    result[o] = Math.round((count[o] / totalGlyphs) * 100);
+    result[o] = Math.round((count[o] / total) * 100);
   }
+  return result;
+}
+
+// ─────────────────────────────────────────────
+// 오행 상생(相生) / 상극(相剋) 관계
+// ─────────────────────────────────────────────
+
+/** 오행 상생: 목생화, 화생토, 토생금, 금생수, 수생목 */
+const OHAENG_GENERATES: Record<Ohaeng, Ohaeng> = {
+  목: '화', 화: '토', 토: '금', 금: '수', 수: '목',
+};
+
+/** 나를 생(生)하는 오행 (인성) */
+const OHAENG_GENERATED_BY: Record<Ohaeng, Ohaeng> = {
+  화: '목', 토: '화', 금: '토', 수: '금', 목: '수',
+};
+
+/**
+ * 용신(用神) 계산 — 억부법(抑扶法)
+ * 일간 오행의 강도를 기준으로 신강/신약 판단 후 용신 도출
+ */
+function calculateYongshin(
+  dayPillar: Pillar,
+  ohaengStrength: Record<Ohaeng, number>,
+): { yongshin: Ohaeng; heeshin: Ohaeng; bodyStrength: 'strong' | 'weak' | 'balanced' } {
+  const dayOhaeng = dayPillar.cheonganOhaeng;
+  const avgStrength = 20; // 5오행 균등 분포 시 각 20%
+
+  // 일간 오행 강도 + 인성(나를 생하는 오행) 강도 × 0.6
+  const selfStrength = ohaengStrength[dayOhaeng];
+  const supportStrength = ohaengStrength[OHAENG_GENERATED_BY[dayOhaeng]];
+  const totalBodyStrength = selfStrength + supportStrength * 0.6;
+
+  let bodyStrength: 'strong' | 'weak' | 'balanced';
+  if (totalBodyStrength > avgStrength * 1.5) {
+    bodyStrength = 'strong';
+  } else if (totalBodyStrength < avgStrength * 0.7) {
+    bodyStrength = 'weak';
+  } else {
+    bodyStrength = 'balanced';
+  }
+
+  let yongshin: Ohaeng;
+  let heeshin: Ohaeng;
+
+  if (bodyStrength === 'strong') {
+    // 신강: 설기(洩氣) — 일간이 생하는 오행을 용신
+    yongshin = OHAENG_GENERATES[dayOhaeng];
+    heeshin = OHAENG_GENERATES[yongshin];
+  } else {
+    // 신약/중화: 생조(生助) — 일간을 생하는 오행을 용신
+    yongshin = OHAENG_GENERATED_BY[dayOhaeng];
+    heeshin = OHAENG_GENERATED_BY[yongshin];
+  }
+
+  return { yongshin, heeshin, bodyStrength };
+}
+
+/**
+ * 4기둥 내 합충(合沖) 탐지
+ */
+function getHapChung(pillars: {
+  year: Pillar; month: Pillar; day: Pillar; hour: Pillar | null;
+}): HapChungItem[] {
+  const result: HapChungItem[] = [];
+  const activePillars = [pillars.year, pillars.month, pillars.day];
+  if (pillars.hour) activePillars.push(pillars.hour);
+
+  const cheongans = activePillars.map((p) => p.cheongan);
+  const jijis = activePillars.map((p) => p.jiji);
+
+  // 천간합 탐지
+  for (let i = 0; i < cheongans.length; i++) {
+    for (let j = i + 1; j < cheongans.length; j++) {
+      const hap = CHEONGAN_HAP[cheongans[i]];
+      if (hap && hap.partner === cheongans[j]) {
+        result.push({
+          type: 'cheonganHap',
+          description: `${cheongans[i]}${cheongans[j]} 천간합 → ${hap.result} 기운으로 변화`,
+          resultOhaeng: hap.result,
+        });
+      }
+    }
+  }
+
+  // 지지충 탐지
+  for (let i = 0; i < jijis.length; i++) {
+    for (let j = i + 1; j < jijis.length; j++) {
+      if (JIJI_CHUNG[jijis[i]] === jijis[j]) {
+        result.push({
+          type: 'jijiChung',
+          description: `${JIJI_KR[jijis[i]]}${JIJI_KR[jijis[j]]} 지지충 — 기운의 충돌`,
+        });
+      }
+    }
+  }
+
+  // 삼합 탐지 (2개 이상 있을 때)
+  for (const samhap of SAMHAP) {
+    const matchCount = samhap.members.filter((m) => jijis.includes(m)).length;
+    if (matchCount >= 2) {
+      result.push({
+        type: 'samhap',
+        description: `${samhap.members.map((m) => JIJI_KR[m]).join('')} 삼합 → ${samhap.result} 기운 강화`,
+        resultOhaeng: samhap.result,
+      });
+    }
+  }
+
   return result;
 }
 
@@ -425,13 +550,19 @@ export function calculateSaju(input: SajuInput): SajuResult {
 
   const pillars = { year: yearPillar, month: monthPillar, day: dayPillar, hour: hourPillar };
 
-  // ── 오행 분석 ──
-  const totalGlyphs = hourPillar ? 8 : 6;
-  const ohaengCount = countOhaeng(pillars);
-  const ohaengStrength = normalizeOhaeng(ohaengCount, totalGlyphs);
+  // ── 오행 분석 (지장간 가중 합산) ──
+  const ohaengCount = countOhaengWeighted(pillars);
+  const total = OHAENG_LIST.reduce((sum, o) => sum + ohaengCount[o], 0);
+  const ohaengStrength = normalizeOhaeng(ohaengCount, total);
   const { weak: weakOhaeng, strong: strongOhaeng } = rankOhaeng(ohaengStrength);
   const imbalanceScore = calcImbalanceScore(ohaengStrength);
   const summary = buildSummary(weakOhaeng, strongOhaeng, imbalanceScore);
+
+  // ── 용신/희신 계산 ──
+  const { yongshin, heeshin, bodyStrength } = calculateYongshin(dayPillar, ohaengStrength);
+
+  // ── 합충 분석 ──
+  const hapChung = getHapChung(pillars);
 
   return {
     input,
@@ -443,6 +574,10 @@ export function calculateSaju(input: SajuInput): SajuResult {
     imbalanceScore,
     summary,
     inputChunWarning,
+    bodyStrength,
+    yongshin,
+    heeshin,
+    hapChung,
   };
 }
 

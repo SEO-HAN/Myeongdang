@@ -139,6 +139,71 @@ export interface SajuResult {
   summary: string;
   /** 입춘 기준 주의 필요 여부 */
   inputChunWarning?: boolean;
+  /** 신강/신약/중화 */
+  bodyStrength: 'strong' | 'weak' | 'balanced';
+  /** 용신 오행 (가장 필요한 오행) */
+  yongshin: Ohaeng;
+  /** 희신 오행 (용신을 돕는 오행) */
+  heeshin: Ohaeng;
+  /** 4기둥 내 합충 분석 결과 */
+  hapChung: HapChungItem[];
+}
+
+// ─────────────────────────────────────────────
+// 지장간(地藏干) — 지지 내 숨겨진 천간 비율
+// 여기장간(餘氣藏干) 기준, 자평진전
+// ─────────────────────────────────────────────
+export const JIJANGGAN: Record<Jiji, Array<{ cheongan: Cheongan; ratio: number }>> = {
+  子: [{ cheongan: '壬', ratio: 100 }],
+  丑: [{ cheongan: '癸', ratio: 30 }, { cheongan: '己', ratio: 60 }, { cheongan: '辛', ratio: 10 }],
+  寅: [{ cheongan: '戊', ratio: 7 }, { cheongan: '丙', ratio: 7 }, { cheongan: '甲', ratio: 86 }],
+  卯: [{ cheongan: '甲', ratio: 10 }, { cheongan: '乙', ratio: 90 }],
+  辰: [{ cheongan: '乙', ratio: 9 }, { cheongan: '癸', ratio: 3 }, { cheongan: '戊', ratio: 88 }],
+  巳: [{ cheongan: '戊', ratio: 7 }, { cheongan: '庚', ratio: 7 }, { cheongan: '丙', ratio: 86 }],
+  午: [{ cheongan: '丙', ratio: 10 }, { cheongan: '己', ratio: 10 }, { cheongan: '丁', ratio: 80 }],
+  未: [{ cheongan: '丁', ratio: 9 }, { cheongan: '乙', ratio: 3 }, { cheongan: '己', ratio: 88 }],
+  申: [{ cheongan: '戊', ratio: 7 }, { cheongan: '壬', ratio: 7 }, { cheongan: '庚', ratio: 86 }],
+  酉: [{ cheongan: '庚', ratio: 10 }, { cheongan: '辛', ratio: 90 }],
+  戌: [{ cheongan: '辛', ratio: 9 }, { cheongan: '丁', ratio: 3 }, { cheongan: '戊', ratio: 88 }],
+  亥: [{ cheongan: '戊', ratio: 7 }, { cheongan: '甲', ratio: 7 }, { cheongan: '壬', ratio: 86 }],
+}
+
+// ─────────────────────────────────────────────
+// 합충(合沖) 상수
+// ─────────────────────────────────────────────
+
+/** 천간합(天干合) — 갑기합토, 을경합금, 병신합수, 정임합목, 무계합화 */
+export const CHEONGAN_HAP: Record<Cheongan, { partner: Cheongan; result: Ohaeng }> = {
+  甲: { partner: '己', result: '토' }, 己: { partner: '甲', result: '토' },
+  乙: { partner: '庚', result: '금' }, 庚: { partner: '乙', result: '금' },
+  丙: { partner: '辛', result: '수' }, 辛: { partner: '丙', result: '수' },
+  丁: { partner: '壬', result: '목' }, 壬: { partner: '丁', result: '목' },
+  戊: { partner: '癸', result: '화' }, 癸: { partner: '戊', result: '화' },
+}
+
+/** 지지충(地支沖) — 6충 */
+export const JIJI_CHUNG: Record<Jiji, Jiji> = {
+  子: '午', 午: '子',
+  丑: '未', 未: '丑',
+  寅: '申', 申: '寅',
+  卯: '酉', 酉: '卯',
+  辰: '戌', 戌: '辰',
+  巳: '亥', 亥: '巳',
+}
+
+/** 삼합(三合) — 국(局) 형성 */
+export const SAMHAP: Array<{ members: [Jiji, Jiji, Jiji]; result: Ohaeng }> = [
+  { members: ['申', '子', '辰'], result: '수' },
+  { members: ['亥', '卯', '未'], result: '목' },
+  { members: ['寅', '午', '戌'], result: '화' },
+  { members: ['巳', '酉', '丑'], result: '금' },
+]
+
+/** 합충 분석 결과 아이템 */
+export interface HapChungItem {
+  type: 'cheonganHap' | 'jijiChung' | 'samhap'
+  description: string
+  resultOhaeng?: Ohaeng
 }
 
 /** 장소 추천 필터 (사주 → 장소 매핑용) */

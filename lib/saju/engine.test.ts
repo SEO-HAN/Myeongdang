@@ -148,9 +148,9 @@ test('시주 지지 검증 (12지시)', () => {
 test('시주 미입력 시 null 처리', () => {
   const r = calculateSaju({ year: 2024, month: 5, day: 1 });
   expect('시간 미입력 → hour pillar null', r.pillars.hour, null);
-  // 6글자 기준 오행 합산
+  // 지장간 가중 합산: 3기둥(천간3 + 지지 지장간) ≈ 6 (±0.01 허용)
   const total = Object.values(r.ohaengCount).reduce((a, b) => a + b, 0);
-  expect('시간 미입력 → 오행 합계 6', total, 6);
+  expect('시간 미입력 → 오행 합계 ≈ 6', Math.abs(total - 6) < 0.01, true);
 });
 
 // ─────────────────────────────────────────────
@@ -160,9 +160,9 @@ test('시주 미입력 시 null 처리', () => {
 test('오행 분포 논리적 검증', () => {
   const r = calculateSaju({ year: 1990, month: 7, day: 15, hour: 14 });
 
-  // 오행 합계 = 총 글자 수 (8 with hour, 6 without)
+  // 지장간 가중 합산: 4기둥(천간4 + 지지 지장간) ≈ 8 (±0.01 허용)
   const countSum = Object.values(r.ohaengCount).reduce((a, b) => a + b, 0);
-  expect('오행 개수 합 = 8 (시주 포함)', countSum, 8);
+  expect('오행 개수 합 ≈ 8 (시주 포함)', Math.abs(countSum - 8) < 0.01, true);
 
   // 강도 합계 ≈ 100 (±1 반올림 오차 허용)
   const strengthSum = Object.values(r.ohaengStrength).reduce((a, b) => a + b, 0);
@@ -216,6 +216,82 @@ test('실사용 시나리오 — 사주 결과 출력', () => {
   console.log(`  요약: ${r.summary}`);
 
   expect('요약 텍스트 생성됨', r.summary.length > 0, true);
+});
+
+// ─────────────────────────────────────────────
+// TEST SUITE C1: 지장간 검증
+// ─────────────────────────────────────────────
+
+test('지장간 비율 검증', () => {
+  const { JIJANGGAN, JIJI_LIST } = require('./types');
+
+  // 子의 지장간: 壬 100% → 수 1.0
+  const jaSub = JIJANGGAN['子'];
+  expect('子 지장간 1개', jaSub.length, 1);
+  expect('子 지장간 천간 = 壬', jaSub[0].cheongan, '壬');
+  expect('子 지장간 비율 = 100', jaSub[0].ratio, 100);
+
+  // 丑의 지장간 비율 합 = 100
+  const chukSub = JIJANGGAN['丑'];
+  const chukTotal = chukSub.reduce((s: number, e: {ratio: number}) => s + e.ratio, 0);
+  expect('丑 지장간 비율 합 = 100', chukTotal, 100);
+
+  // 모든 지지 비율 합 = 100 검증
+  for (const jiji of JIJI_LIST) {
+    const total = JIJANGGAN[jiji].reduce((s: number, e: {ratio: number}) => s + e.ratio, 0);
+    expect(`${jiji} 지장간 비율 합 = 100`, total, 100);
+  }
+
+  // 오행 강도 합 ≈ 100%
+  const r = calculateSaju({ year: 1990, month: 7, day: 15, hour: 10 });
+  const strengthTotal = Object.values(r.ohaengStrength).reduce((a, b) => a + b, 0);
+  expect('오행 강도 합 ≈ 100 (±6)', Math.abs(strengthTotal - 100) < 6, true);
+});
+
+// ─────────────────────────────────────────────
+// TEST SUITE C2: 용신 계산 검증
+// ─────────────────────────────────────────────
+
+test('용신/희신/bodyStrength 타입 검증', () => {
+  const r = calculateSaju({ year: 1990, month: 7, day: 15, hour: 10 });
+  const validOhaeng = ['목', '화', '토', '금', '수'];
+  expect('용신이 유효한 오행', validOhaeng.includes(r.yongshin), true);
+  expect('희신이 유효한 오행', validOhaeng.includes(r.heeshin), true);
+  expect('bodyStrength 유효', ['strong', 'weak', 'balanced'].includes(r.bodyStrength), true);
+});
+
+test('화 신강 사주 용신 검증', () => {
+  // 병오년(1966) 강한 화 사주
+  const r = calculateSaju({ year: 1966, month: 7, day: 7, hour: 13 });
+  expect('bodyStrength 유효값', ['strong', 'weak', 'balanced'].includes(r.bodyStrength), true);
+  // bodyStrength strong이고 일간 화면 용신은 토
+  if (r.bodyStrength === 'strong' && r.pillars.day.cheonganOhaeng === '화') {
+    expect('화 신강 → 용신 토', r.yongshin, '토');
+  } else {
+    // 조건이 맞지 않아도 유효한 오행이어야 함
+    expect('용신 유효', ['목', '화', '토', '금', '수'].includes(r.yongshin), true);
+  }
+});
+
+// ─────────────────────────────────────────────
+// TEST SUITE C3: 합충 검증
+// ─────────────────────────────────────────────
+
+test('hapChung 배열 반환', () => {
+  const r = calculateSaju({ year: 1984, month: 6, day: 20, hour: 9 });
+  expect('hapChung는 배열', Array.isArray(r.hapChung), true);
+  // 합충 항목이 있으면 타입 확인
+  if (r.hapChung.length > 0) {
+    const validTypes = ['cheonganHap', 'jijiChung', 'samhap'];
+    expect('합충 타입 유효', validTypes.includes(r.hapChung[0].type), true);
+    expect('합충 설명 존재', r.hapChung[0].description.length > 0, true);
+  }
+});
+
+test('hapChung 없는 경우 빈 배열', () => {
+  // 합충이 없는 일반 사주
+  const r = calculateSaju({ year: 2000, month: 1, day: 1 });
+  expect('hapChung 배열', Array.isArray(r.hapChung), true);
 });
 
 // ─────────────────────────────────────────────

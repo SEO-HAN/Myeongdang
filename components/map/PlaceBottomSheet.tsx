@@ -11,7 +11,7 @@
  */
 'use client'
 
-import { useEffect, useCallback } from 'react'
+import { useEffect, useCallback, useState } from 'react'
 import { AnimatePresence, motion, type PanInfo } from 'framer-motion'
 import Image from 'next/image'
 import {
@@ -21,6 +21,15 @@ import {
 import { OHAENG_EMOJI, OHAENG_COLOR } from '@/lib/saju/types'
 import { cn, getOhaengHanja, SNS_EMOJI } from '@/lib/utils'
 import type { Ohaeng } from '@/lib/saju/types'
+
+// 3단계 스냅 높이 타입
+type SnapLevel = 'peek' | 'mini' | 'full'
+
+const SNAP_HEIGHT: Record<SnapLevel, string> = {
+  peek: '80px',
+  mini: '45vh',
+  full: '88vh',
+}
 
 // ─────────────────────────────────────────────
 // 서브 컴포넌트: 오행 칩
@@ -115,6 +124,14 @@ export default function PlaceBottomSheet() {
   const toggleBookmark = useUserStore((s) => s.toggleBookmark)
   const isBookmarked   = useUserStore((s) => s.isBookmarked)
 
+  // 3단계 스냅 상태
+  const [snap, setSnap] = useState<SnapLevel>('full')
+
+  // isOpen이 true로 변경될 때 full로 초기화
+  useEffect(() => {
+    if (isOpen) setSnap('full')
+  }, [isOpen])
+
   // ESC 키 닫기
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -124,12 +141,25 @@ export default function PlaceBottomSheet() {
     return () => window.removeEventListener('keydown', handler)
   }, [closePlace])
 
-  // 스와이프 핸들러
+  // 3단계 스냅 드래그 핸들러
   const handleDragEnd = useCallback(
     (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-      if (info.offset.y > 80 || info.velocity.y > 400) closePlace()
+      const { offset, velocity } = info
+      // 아래로 빠르게 or 크게 → 닫거나 축소
+      if (velocity.y > 500 || offset.y > 200) {
+        if (snap === 'full') setSnap('mini')
+        else if (snap === 'mini') setSnap('peek')
+        else closePlace()
+        return
+      }
+      // 위로 빠르게 or 크게 → 확장
+      if (velocity.y < -300 || offset.y < -80) {
+        if (snap === 'peek') setSnap('mini')
+        else if (snap === 'mini') setSnap('full')
+        return
+      }
     },
-    [closePlace],
+    [snap, closePlace],
   )
 
   // 카카오톡 공유
@@ -175,9 +205,10 @@ export default function PlaceBottomSheet() {
 
           {/* 바텀시트 */}
           <motion.div
-            className="fixed bottom-0 left-0 right-0 z-30 bg-white rounded-t-3xl shadow-bottom max-h-[88vh] overflow-hidden flex flex-col"
+            className="fixed bottom-0 left-0 right-0 z-30 bg-white rounded-t-[32px] shadow-bottom overflow-hidden flex flex-col"
+            style={{ boxShadow: '0 -4px 40px rgba(0,0,0,0.15)' }}
             initial={{ y: '100%' }}
-            animate={{ y: 0 }}
+            animate={{ y: 0, height: SNAP_HEIGHT[snap] }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 28, stiffness: 320 }}
             drag="y"
@@ -190,8 +221,27 @@ export default function PlaceBottomSheet() {
               <div className="w-10 h-1 rounded-full bg-gray-200" />
             </div>
 
+            {/* peek/mini 모드에서만 보이는 장소명 요약 */}
+            {snap !== 'full' && (
+              <div className="px-4 py-2 flex items-center justify-between">
+                <div>
+                  <p className="font-semibold text-gray-900 text-sm">{place.name}</p>
+                  <p className="text-xs text-gray-500">{place.ohaeng.map(o => OHAENG_EMOJI[o as Ohaeng]).join(' ')} {place.address.split(' ').slice(0, 2).join(' ')}</p>
+                </div>
+                <button
+                  onClick={() => setSnap('full')}
+                  className="text-xs font-medium px-3 py-1.5 rounded-full bg-gray-100 text-gray-600"
+                >
+                  상세 보기
+                </button>
+              </div>
+            )}
+
             {/* 스크롤 영역 */}
-            <div className="overflow-y-auto overscroll-contain pb-safe pb-8">
+            <div className={cn(
+              'overflow-hidden overscroll-contain pb-safe pb-8 transition-all',
+              snap === 'full' && 'overflow-y-auto',
+            )}>
 
               {/* 이미지 영역 */}
               <div className="relative h-44 bg-gradient-to-br from-slate-700 to-slate-500 mx-0">
@@ -314,7 +364,7 @@ export default function PlaceBottomSheet() {
                     href={place.kakaomap_url || `https://map.kakao.com/link/search/${encodeURIComponent(place.name)}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-1.5 py-3 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                    className="flex items-center justify-center gap-1.5 py-3.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
                   >
                     🗺️ 카카오맵으로 보기
                   </a>
@@ -323,7 +373,7 @@ export default function PlaceBottomSheet() {
                   <button
                     onClick={() => toggleBookmark(place.id)}
                     className={cn(
-                      'flex items-center justify-center gap-1.5 py-3 rounded-xl text-sm font-medium transition-colors',
+                      'flex items-center justify-center gap-1.5 py-3.5 rounded-xl text-sm font-medium transition-colors',
                       isBookmarked(place.id)
                         ? 'bg-brand text-white'
                         : 'bg-brand text-white hover:bg-brand/90',
@@ -336,7 +386,7 @@ export default function PlaceBottomSheet() {
                 {/* 카카오톡 공유 */}
                 <button
                   onClick={handleShare}
-                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                  className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
                 >
                   <span className="text-base">💬</span>
                   카카오톡으로 공유하기

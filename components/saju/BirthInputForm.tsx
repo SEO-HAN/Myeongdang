@@ -14,6 +14,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
 
 export interface BirthFormData {
+  name: string
+  gender: 'male' | 'female'
   year: number
   month: number
   day: number
@@ -57,7 +59,7 @@ const LUCK_TYPES = [
   { icon: '🏡', label: '부동산운', value: '부동산운' },
 ]
 
-const TOTAL_STEPS = 3
+const TOTAL_STEPS = 4
 
 const slideVariants = {
   enter: (dir: number) => ({ x: dir > 0 ? 48 : -48, opacity: 0 }),
@@ -93,12 +95,23 @@ function SparklesIcon() {
 }
 
 export default function BirthInputForm({ onSubmit, isLoading = false }: BirthInputFormProps) {
-  const [step, setStep]       = useState(1)
-  const [direction, setDir]   = useState(1)
-  const [year, setYear]       = useState('')
-  const [month, setMonth]     = useState('')
-  const [day, setDay]         = useState('')
-  const [hour, setHour]       = useState<number | null>(null)
+  // step: 0=이름+성별, 1=생년월일, 2=시간, 3=운
+  const [step, setStep]           = useState(0)
+  const [direction, setDir]       = useState(1)
+
+  // Step 0 상태
+  const [name, setName]     = useState('')
+  const [gender, setGender] = useState<'male' | 'female'>('male')
+
+  // Step 1 상태
+  const [year, setYear]   = useState('')
+  const [month, setMonth] = useState('')
+  const [day, setDay]     = useState('')
+
+  // Step 2 상태
+  const [hour, setHour] = useState<number | null>(null)
+
+  // Step 3 상태
   const [luckPreference, setLuck] = useState<string | null>(null)
 
   const go = useCallback((next: number) => {
@@ -107,22 +120,25 @@ export default function BirthInputForm({ onSubmit, isLoading = false }: BirthInp
   }, [step])
 
   const canProceed = useCallback((): boolean => {
+    if (step === 0) return name.trim().length > 0
     if (step === 1) {
       const y = Number(year), m = Number(month), d = Number(day)
       return y >= 1900 && y <= CURRENT_YEAR && m >= 1 && m <= 12 && d >= 1 && d <= 31
     }
     return true
-  }, [step, year, month, day])
+  }, [step, name, year, month, day])
 
   const handleSubmit = useCallback(() => {
     onSubmit({
+      name,
+      gender,
       year:  Number(year),
       month: Number(month),
       day:   Number(day),
       hour:  hour ?? undefined,
       luckPreference: luckPreference ?? undefined,
     })
-  }, [year, month, day, hour, luckPreference, onSubmit])
+  }, [name, gender, year, month, day, hour, luckPreference, onSubmit])
 
   // 공통 입력 필드 스타일
   const inputClass = (valid: boolean | null) => cn(
@@ -144,12 +160,13 @@ export default function BirthInputForm({ onSubmit, isLoading = false }: BirthInp
         <div className="flex gap-1.5 mb-1">
           {Array.from({ length: TOTAL_STEPS }, (_, i) => (
             <div key={i} className="progress-track">
-              {i < step && <div className="progress-fill" style={{ width: '100%' }} />}
+              {/* step 0이 완료된 것처럼 보이도록 i < step+1 기준 */}
+              {i <= step && <div className="progress-fill" style={{ width: '100%' }} />}
             </div>
           ))}
         </div>
         <p className="text-xs text-right" style={{ color: 'var(--ink-mid)' }}>
-          {step} / {TOTAL_STEPS}
+          {step + 1} / {TOTAL_STEPS}
         </p>
       </div>
 
@@ -165,6 +182,87 @@ export default function BirthInputForm({ onSubmit, isLoading = false }: BirthInp
             exit="exit"
             transition={{ duration: 0.22, ease: 'easeInOut' }}
           >
+
+            {/* ── STEP 0: 이름 + 성별 ── */}
+            {step === 0 && (
+              <div>
+                <div className="flex flex-col items-center mb-8">
+                  <p
+                    className="text-[11px] font-semibold uppercase tracking-widest mb-2"
+                    style={{ color: '#C9973A' }}
+                  >
+                    명당지도에 오신 걸 환영해요
+                  </p>
+                  <h2
+                    className="text-2xl font-semibold text-center leading-snug"
+                    style={{ fontFamily: 'Noto Serif KR, Georgia, serif', color: '#F0EAD8' }}
+                  >
+                    먼저 이름을 알려주세요
+                  </h2>
+                </div>
+
+                {/* 이름 입력 */}
+                <div className="mb-6">
+                  <input
+                    type="text"
+                    placeholder="홍길동"
+                    maxLength={10}
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full text-center text-xl font-bold rounded-2xl py-4 px-4 outline-none transition-all"
+                    style={{
+                      background: '#F5F1E8',
+                      border: '2px solid rgba(0,0,0,0.08)',
+                      color: '#1A1824',
+                      fontFamily: 'Noto Sans KR, sans-serif',
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#C9973A'
+                      e.target.style.boxShadow = '0 0 0 3px rgba(201,151,58,0.15)'
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = 'rgba(0,0,0,0.08)'
+                      e.target.style.boxShadow = 'none'
+                    }}
+                  />
+                </div>
+
+                {/* 성별 선택 */}
+                <div className="mb-6">
+                  <p className="text-sm text-center mb-3" style={{ color: 'rgba(160,152,149,0.8)' }}>
+                    성별을 선택해주세요
+                  </p>
+                  <div className="grid grid-cols-2 gap-3">
+                    {(['male', 'female'] as const).map((g) => (
+                      <button
+                        key={g}
+                        onClick={() => setGender(g)}
+                        className="py-4 rounded-2xl font-semibold text-base transition-all cursor-pointer"
+                        style={gender === g
+                          ? { background: '#C9973A', color: '#fff', border: '2px solid #C9973A' }
+                          : { background: 'rgba(255,255,255,0.08)', color: 'rgba(240,234,216,0.7)', border: '1.5px solid rgba(255,255,255,0.12)' }
+                        }
+                      >
+                        {g === 'male' ? '👨 남성' : '👩 여성'}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => { if (name.trim()) go(1) }}
+                  disabled={!name.trim()}
+                  className="w-full py-4 rounded-2xl font-bold text-base transition-all cursor-pointer"
+                  style={{
+                    background: name.trim() ? '#D94F2A' : 'rgba(255,255,255,0.1)',
+                    color: name.trim() ? '#fff' : 'rgba(255,255,255,0.3)',
+                    boxShadow: name.trim() ? '0px 4px 16px rgba(217,79,42,0.3)' : 'none',
+                  }}
+                >
+                  시작하기
+                </button>
+              </div>
+            )}
 
             {/* ── STEP 1: 생년월일 ── */}
             {step === 1 && (
@@ -369,21 +467,20 @@ export default function BirthInputForm({ onSubmit, isLoading = false }: BirthInp
         </AnimatePresence>
       </div>
 
-      {/* ── 버튼 영역 ──────────────────────────────────────── */}
+      {/* ── 버튼 영역 (step 0은 자체 버튼 사용, step 1~3만 공통 버튼) ── */}
+      {step > 0 && (
       <div className="flex gap-2.5 mt-6">
-        {step > 1 && (
-          <button
-            onClick={() => go(step - 1)}
-            className={cn(
-              'flex-1 py-4 rounded-btn border-2 font-semibold text-sm',
-              'border-gray-200 text-ink-mid hover:border-gold/40 transition-colors cursor-pointer',
-            )}
-          >
-            이전
-          </button>
-        )}
+        <button
+          onClick={() => go(step - 1)}
+          className={cn(
+            'flex-1 py-4 rounded-btn border-2 font-semibold text-sm',
+            'border-gray-200 text-ink-mid hover:border-gold/40 transition-colors cursor-pointer',
+          )}
+        >
+          이전
+        </button>
 
-        {step < TOTAL_STEPS ? (
+        {step < TOTAL_STEPS - 1 ? (
           <button
             onClick={() => go(step + 1)}
             disabled={!canProceed()}
@@ -420,6 +517,7 @@ export default function BirthInputForm({ onSubmit, isLoading = false }: BirthInp
           </button>
         )}
       </div>
+      )}
     </div>
   )
 }

@@ -121,18 +121,25 @@ export function useShareCard() {
         canvas.height = CARD_SIZE
         const ctx = canvas.getContext('2d')!
 
-        // ── 배경 그라디언트 ──
+        // ── 오행별 배경 그라디언트 ──
+        const primaryWeak = result.weakOhaeng[0] as Ohaeng
+        const OHAENG_HEX_MAP: Record<string, string> = {
+          목: '#4B7D1F', 화: '#D94F2A', 토: '#C17D2A', 금: '#9E9A8E', 수: '#2563EB',
+        }
+        const accentHex = OHAENG_HEX_MAP[primaryWeak] ?? '#E8593C'
+        const [ar, ag, ab] = hexToRgb(accentHex)
+
         const bg = ctx.createLinearGradient(0, 0, CARD_SIZE, CARD_SIZE)
-        bg.addColorStop(0, '#0f0c29')
-        bg.addColorStop(0.5, '#302b63')
-        bg.addColorStop(1, '#24243e')
+        bg.addColorStop(0, '#0D0D1A')
+        bg.addColorStop(0.5, '#131230')
+        bg.addColorStop(1, `rgba(${ar},${ag},${ab},0.25)`)
         ctx.fillStyle = bg
         ctx.fillRect(0, 0, CARD_SIZE, CARD_SIZE)
 
-        // ── 상단 장식 원 ──
+        // ── 오행 색 장식 원 ──
         ctx.beginPath()
-        ctx.arc(CARD_SIZE, 0, 400, 0, Math.PI * 2)
-        ctx.fillStyle = 'rgba(232,89,60,0.08)'
+        ctx.arc(CARD_SIZE * 0.85, CARD_SIZE * 0.15, 350, 0, Math.PI * 2)
+        ctx.fillStyle = `rgba(${ar},${ag},${ab},0.10)`
         ctx.fill()
 
         // ── 브랜드 헤더 ──
@@ -142,50 +149,50 @@ export function useShareCard() {
         ctx.textBaseline = 'alphabetic'
         ctx.fillText('명당지도 · 明堂地圖', CARD_SIZE / 2, 120)
 
-        // ── 메인 카피 ──
-        const weakO = result.weakOhaeng[0]
-        const emoji  = OHAENG_EMOJI[weakO]
-        const line1  = `나는 ${emoji} ${weakO}(火)가 부족한 사람`
-        ctx.font = 'bold 72px sans-serif'
-        ctx.fillStyle = '#ffffff'
-        ctx.fillText(line1.replace('(火)', ''), CARD_SIZE / 2, 230)
+        // ── 메인 카피 (이름 표시) ──
+        const name = (result.input as unknown as Record<string, unknown>).name as string | undefined
+        const nameLine = name ? `${name}님은` : '나는'
+        const weakEmoji = OHAENG_EMOJI[result.weakOhaeng[0]]
+        const weakLabel = result.weakOhaeng.map(o => `${OHAENG_EMOJI[o]}${o}`).join(' ')
 
-        const weakLabels = result.weakOhaeng
-          .map((o) => `${OHAENG_EMOJI[o]} ${o}`)
-          .join('  ')
-        ctx.font = '48px sans-serif'
-        ctx.fillStyle = 'rgba(255,255,255,0.7)'
-        ctx.fillText(`부족 오행: ${weakLabels}`, CARD_SIZE / 2, 310)
+        ctx.font = 'bold 64px sans-serif'
+        ctx.fillStyle = '#F0EAD8'
+        ctx.fillText(nameLine, CARD_SIZE / 2, 200)
+
+        ctx.font = 'bold 80px sans-serif'
+        ctx.fillStyle = accentHex
+        ctx.fillText(`${weakEmoji} ${result.weakOhaeng[0]} 기운이`, CARD_SIZE / 2, 300)
+
+        ctx.font = 'bold 64px sans-serif'
+        ctx.fillStyle = '#F0EAD8'
+        ctx.fillText('부족한 사주예요', CARD_SIZE / 2, 390)
 
         // ── 레이더 차트 ──
-        drawRadar(ctx, result.ohaengStrength, CARD_SIZE / 2, 590, 210)
+        drawRadar(ctx, result.ohaengStrength, CARD_SIZE / 2, 620, 210)
 
         // ── 하단 분리선 ──
-        ctx.strokeStyle = 'rgba(255,255,255,0.1)'
+        ctx.strokeStyle = 'rgba(255,255,255,0.12)'
         ctx.lineWidth = 1
         ctx.beginPath()
-        ctx.moveTo(80, 840)
-        ctx.lineTo(CARD_SIZE - 80, 840)
+        ctx.moveTo(80, 860)
+        ctx.lineTo(CARD_SIZE - 80, 860)
         ctx.stroke()
 
-        // ── 요약 텍스트 ──
-        ctx.font = '38px sans-serif'
-        ctx.fillStyle = 'rgba(255,255,255,0.6)'
-        ctx.fillText(result.summary.slice(0, 28) + '…', CARD_SIZE / 2, 910)
+        // ── 부족 오행 요약 ──
+        ctx.font = '40px sans-serif'
+        ctx.fillStyle = 'rgba(240,234,216,0.7)'
+        ctx.fillText(`부족 오행: ${weakLabel}`, CARD_SIZE / 2, 930)
 
-        // ── CTA ──
-        // 버튼 배경
-        const btnX = CARD_SIZE / 2 - 220
-        const btnW = 440
-        const btnH = 90
+        // ── CTA 버튼 ──
+        const btnX = CARD_SIZE / 2 - 240
         ctx.beginPath()
-        ctx.roundRect(btnX, 960, btnW, btnH, 45)
-        ctx.fillStyle = '#E8593C'
+        ctx.roundRect(btnX, 980, 480, 88, 44)
+        ctx.fillStyle = accentHex
         ctx.fill()
 
-        ctx.font = 'bold 44px sans-serif'
+        ctx.font = 'bold 42px sans-serif'
         ctx.fillStyle = '#ffffff'
-        ctx.fillText('🗺️ 내 명당 찾기 — myeongdang.kr', CARD_SIZE / 2, 1015)
+        ctx.fillText('내 명당 찾기 → myeongdang.kr', CARD_SIZE / 2, 1034)
 
         resolve(canvas.toDataURL('image/png', 0.95))
       })

@@ -34,7 +34,10 @@ export default function OnboardingPage() {
       const json = await res.json()
       if (!res.ok) throw new Error(json.error)
 
-      setSaju({ year: data.year, month: data.month, day: data.day, hour: data.hour })
+      setSaju(
+        { year: data.year, month: data.month, day: data.day, hour: data.hour },
+        { name: data.name, gender: data.gender },
+      )
 
       const params = new URLSearchParams({
         y: String(data.year),

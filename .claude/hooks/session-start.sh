@@ -32,8 +32,15 @@ if [ ! -d "$PROJECT_DIR/node_modules" ]; then
   WARNINGS+=("⚠️  node_modules 없음 — npm install 실행 필요")
 fi
 
-# 3. 현재 개발 단계 정보
-INFO+=("📍 현재 단계: E단계 완료 (론치 준비) | F단계 대기")
+# 3. 현재 개발 단계 정보 (MASTERPLAN.md에서 읽기)
+if [ -f "$PROJECT_DIR/MASTERPLAN.md" ]; then
+  CURRENT_PHASE=$(grep -m1 "^\*\*단계:\*\*" "$PROJECT_DIR/MASTERPLAN.md" | sed 's/\*\*단계:\*\* //')
+  NEXT_TODO=$(grep -A3 "^## ⏭️ NEXT" "$PROJECT_DIR/WORKLOG.md" 2>/dev/null | grep "^\*\*Phase" | head -1 | sed 's/\*\*//g')
+  INFO+=("📍 현재 단계: ${CURRENT_PHASE:-MASTERPLAN.md 확인 필요}")
+  [ -n "$NEXT_TODO" ] && INFO+=("⏭️  다음 작업: ${NEXT_TODO}")
+else
+  INFO+=("📍 현재 단계: F단계 완료 → Phase B (UX/UI 리디자인) 대기")
+fi
 INFO+=("📁 총 파일: $(find "$PROJECT_DIR" -type f \( -name '*.ts' -o -name '*.tsx' \) ! -path '*/node_modules/*' ! -path '*/.next/*' | wc -l | tr -d ' ')개 TS/TSX 파일")
 
 # 4. TypeScript 타입 오류 빠른 체크 (resume 세션에서만)
@@ -83,10 +90,14 @@ if [ ${#WARNINGS[@]} -gt 0 ]; then
 fi
 
 CONTEXT+="\n💡 핵심 명령어:\n"
-CONTEXT+="  npm run dev        → 개발 서버\n"
+CONTEXT+="  npm run dev        → 개발 서버 (Mock 모드: NEXT_PUBLIC_MOCK_MODE=true)\n"
 CONTEXT+="  npm run type-check → TS 검증\n"
 CONTEXT+="  npm run build      → 프로덕션 빌드\n"
 CONTEXT+="  [사주 엔진 테스트] → npx ts-node -P /tmp/tsconfig_test.json lib/saju/engine.test.ts\n"
+CONTEXT+="\n📋 컨텍스트 복원 순서:\n"
+CONTEXT+="  1. MASTERPLAN.md → 현재 Phase/Step 확인\n"
+CONTEXT+="  2. WORKLOG.md    → NEXT 섹션 다음 작업 확인\n"
+CONTEXT+="  3. 수정할 파일만 Read (전체 읽기 금지)\n"
 
 # ── JSON 응답 출력 ────────────────────────────────────────────
 printf '%s' "$CONTEXT" | jq -Rs '{additionalContext: .}'

@@ -161,6 +161,23 @@ OHAENG_LUCK   // { 목:['건강운','성장운'], 화:['열정운','사업운'],
 서울 15곳 + 전국 15곳. `supabase/migrations/002_seed_data.sql` 참조.
 각 장소: ohaeng TEXT[], luck_types TEXT[], trust_score, expert_verified, reason_text(풍수 근거)
 
+## 현재 진행 상태
+
+> **새 세션 시작 시 아래 파일을 순서대로 읽어 컨텍스트를 복원하세요**
+
+```
+1. MASTERPLAN.md   → 현재 Phase/Step + 체크리스트 확인
+2. WORKLOG.md      → NEXT 섹션에서 다음 작업 확인
+3. .claude/AGENT_ENV.md → 에이전트 역할 / 품질 게이트 (필요 시)
+```
+
+| 항목 | 상태 |
+|------|------|
+| 현재 Phase | **B (UX/UI 리디자인)** |
+| 완료된 Phase | A (Mock 환경 + 파일 기반 지속성) |
+| 다음 작업 | B1 — 온보딩 플로우 재설계 |
+| Mock 서버 | `npm run dev` → localhost:3000 (Supabase/Kakao 없이 동작) |
+
 ## 가비지 컬렉션 — 컨텍스트 관리
 
 - **이 파일**: 200줄 이하 유지. 상세는 `.claude/rules/`로 분산

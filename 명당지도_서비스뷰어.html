@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>명당지도 — 서비스 구현 현황 뷰어</title>
+<style>
+  :root {
+    --brand: #E8593C;
+    --brand-light: #FAECE7;
+    --목-hex: #3B6D11; --목-bg: #EAF3DE;
+    --화-hex: #E8593C; --화-bg: #FAECE7;
+    --토-hex: #BA7517; --토-bg: #FAEEDA;
+    --금-hex: #888780; --금-bg: #F1EFE8;
+    --수-hex: #2563EB; --수-bg: #E6F1FB;
+    --gray-50: #F8FAFC; --gray-100: #F1F5F9; --gray-200: #E2E8F0;
+    --gray-400: #94A3B8; --gray-500: #64748B; --gray-700: #334155; --gray-900: #0F172A;
+    --green: #22C55E; --amber: #F59E0B; --red: #EF4444;
+    --shadow-card: 0 2px 12px rgba(0,0,0,.08);
+    --shadow-bottom: 0 -4px 24px rgba(0,0,0,.1);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, 'Pretendard', 'Apple SD Gothic Neo', sans-serif; background: #0F172A; color: white; overflow-x: hidden; }
+
+  /* ── 레이아웃 ── */
+  .viewer { display: flex; height: 100vh; }
+  .sidebar { width: 260px; min-width: 260px; background: #1E293B; border-right: 1px solid #334155; display: flex; flex-direction: column; overflow: hidden; }
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .topbar { height: 56px; background: #1E293B; border-bottom: 1px solid #334155; display: flex; align-items: center; padding: 0 20px; gap: 16px; }
+  .content { flex: 1; overflow: auto; display: flex; align-items: flex-start; justify-content: center; padding: 24px; background: #0F172A; }
+
+  /* ── 사이드바 ── */
+  .sidebar-header { padding: 20px 16px 12px; border-bottom: 1px solid #334155; }
+  .sidebar-header h1 { font-size: 16px; font-weight: 700; color: white; }
+  .sidebar-header p { font-size: 11px; color: #94A3B8; margin-top: 2px; }
+  .nav-section { padding: 10px 8px 6px; }
+  .nav-section-label { font-size: 10px; font-weight: 600; color: #64748B; text-transform: uppercase; letter-spacing: .08em; padding: 0 8px 6px; }
+  .nav-item { display: flex; align-items: center; gap-10px; gap: 8px; padding: 9px 10px; border-radius: 8px; cursor: pointer; font-size: 13px; color: #94A3B8; transition: all .15s; border: none; background: none; width: 100%; text-align: left; }
+  .nav-item:hover { background: #334155; color: white; }
+  .nav-item.active { background: var(--brand); color: white; }
+  .nav-item .icon { font-size: 15px; min-width: 20px; text-align: center; }
+  .badge { margin-left: auto; font-size: 10px; font-weight: 700; background: #334155; color: #94A3B8; border-radius: 99px; padding: 2px 7px; }
+  .badge.done { background: rgba(34,197,94,.15); color: var(--green); }
+  .badge.todo { background: rgba(251,191,36,.15); color: var(--amber); }
+
+  /* ── 탑바 ── */
+  .stage-badge { font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 99px; }
+  .stage-f { background: rgba(34,197,94,.15); color: var(--green); }
+  .stage-g { background: rgba(251,191,36,.15); color: var(--amber); }
+  .topbar-title { font-size: 14px; font-weight: 600; color: white; }
+  .topbar-sub { font-size: 12px; color: #64748B; margin-left: auto; }
+
+  /* ── 폰 목업 ── */
+  .phone-wrap { position: relative; }
+  .phone-frame { width: 375px; height: 812px; background: white; border-radius: 44px; overflow: hidden; position: relative;
+    box-shadow: 0 0 0 10px #1E293B, 0 0 0 12px #334155, 0 30px 80px rgba(0,0,0,.5); }
+  .phone-notch { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 120px; height: 30px; background: #1E293B; border-radius: 0 0 20px 20px; z-index: 100; }
+  .phone-screen { width: 100%; height: 100%; overflow: hidden; background: var(--gray-50); position: relative; }
+
+  /* ── 스크린 공통 ── */
+  .screen { display: none; width: 375px; height: 812px; position: relative; overflow: hidden; flex-direction: column; }
+  .screen.active { display: flex; }
+
+  /* ── 스크린: 지도 메인 ── */
+  .map-bg { position: absolute; inset: 0; }
+  .map-grid { display: grid; width: 100%; height: 100%; }
+  .map-tile { background: #E8F0E3; border: .5px solid #C8D8C0; }
+  .map-road-h { position: absolute; background: #F5F0E8; height: 6px; left: 0; right: 0; }
+  .map-road-v { position: absolute; background: #F5F0E8; width: 6px; top: 0; bottom: 0; }
+
+  .filter-bar { position: absolute; top: 34px; left: 12px; right: 12px; z-index: 20; display: flex; flex-direction: column; gap: 8px; }
+  .personalized-toggle { display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 14px; border-radius: 14px; background: var(--brand); color: white; font-size: 13px; font-weight: 600;
+    box-shadow: var(--shadow-card); }
+  .ohaeng-chips { display: flex; gap: 6px; overflow-x: auto; }
+  .ohaeng-chip { flex-shrink: 0; padding: 6px 12px; border-radius: 99px; font-size: 12px; font-weight: 600;
+    box-shadow: 0 1px 4px rgba(0,0,0,.12); border: none; cursor: pointer; }
+  .chip-all { background: #1F2937; color: white; }
+  .chip-화 { background: var(--화-bg); color: var(--화-hex); }
+  .chip-수 { background: var(--수-bg); color: var(--수-hex); }
+
+  /* 마커 */
+  .marker { position: absolute; display: flex; flex-direction: column; align-items: center; cursor: pointer; z-index: 10; }
+  .marker-dot { border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; box-shadow: 0 2px 6px rgba(0,0,0,.2); }
+  .marker-label { font-size: 10px; font-weight: 700; background: white; border-radius: 6px; padding: 2px 6px; margin-top: 3px; box-shadow: 0 1px 4px rgba(0,0,0,.15); white-space: nowrap; }
+  .marker.selected .marker-dot { transform: scale(1.3); }
+  .marker-dot.lg { width: 38px; height: 38px; font-size: 16px; }
+  .marker-dot.md { width: 28px; height: 28px; font-size: 12px; }
+  .marker-dot.sm { width: 22px; height: 22px; font-size: 10px; }
+
+  /* 일진배너 */
+  .ilshin-overlay { position: absolute; top: 130px; right: 12px; background: #FFF7E6; border: 1.5px solid var(--amber); border-radius: 14px; padding: 10px 13px; font-size: 12px; max-width: 170px; z-index: 15;
+    box-shadow: var(--shadow-card); }
+  .ilshin-grade { font-weight: 800; color: #92400E; font-size: 14px; }
+  .ilshin-score-bar { height: 4px; border-radius: 99px; background: #FDE68A; margin: 5px 0; overflow: hidden; }
+  .ilshin-score-fill { height: 100%; background: var(--amber); border-radius: 99px; }
+
+  /* 개인화 배너 (미입력) */
+  .pers-banner { position: absolute; bottom: 140px; left: 12px; right: 12px; background: white; border-radius: 16px; padding: 12px 14px; display: flex; align-items: center; gap: 12px; box-shadow: var(--shadow-bottom); border: 1px solid var(--gray-200); z-index: 15; }
+
+  /* 바텀시트 */
+  .bottom-sheet { position: absolute; bottom: 0; left: 0; right: 0; background: white; border-radius: 24px 24px 0 0; padding: 0 0 32px;
+    box-shadow: var(--shadow-bottom); z-index: 30; transform: translateY(0); transition: transform .3s; }
+  .bs-handle { width: 36px; height: 4px; background: var(--gray-200); border-radius: 99px; margin: 12px auto 16px; }
+  .bs-img { width: 100%; height: 160px; object-fit: cover; background: linear-gradient(135deg, #EAF3DE, #E6F1FB); display: flex; align-items: center; justify-content: center; font-size: 48px; }
+  .bs-body { padding: 0 16px; }
+  .bs-name { font-size: 18px; font-weight: 800; color: var(--gray-900); margin: 12px 0 4px; }
+  .bs-addr { font-size: 12px; color: var(--gray-500); margin-bottom: 10px; }
+  .ohaeng-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+  .ohaeng-badge { font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 99px; }
+  .trust-bar-wrap { display: flex; align-items: center; gap-8px; gap: 8px; margin-bottom: 10px; }
+  .trust-bar-track { flex: 1; height: 4px; border-radius: 99px; background: var(--gray-100); overflow: hidden; }
+  .trust-bar-fill { height: 100%; border-radius: 99px; }
+  .bs-reason { font-size: 12px; color: var(--gray-700); line-height: 1.6; background: var(--gray-50); border-radius: 10px; padding: 10px 12px; margin-bottom: 10px; }
+  .bs-actions { display: flex; gap: 8px; }
+  .bs-btn { flex: 1; padding: 11px; border-radius: 12px; font-size: 13px; font-weight: 700; border: none; cursor: pointer; }
+  .bs-btn-primary { background: var(--brand); color: white; }
+  .bs-btn-secondary { background: var(--gray-100); color: var(--gray-700); }
+
+  /* ── 스크린: 온보딩 ── */
+  .ob-header { background: linear-gradient(180deg, #0F172A 0%, #1E293B 100%); padding: 44px 16px 24px; }
+  .ob-back { width: 38px; height: 38px; border-radius: 50%; background: rgba(255,255,255,.1); display: flex; align-items: center; justify-content: center; font-size: 16px; margin-bottom: 16px; color: white; cursor: pointer; }
+  .ob-title { font-size: 22px; font-weight: 800; color: white; line-height: 1.4; margin-bottom: 6px; }
+  .ob-title span { color: var(--brand); }
+  .ob-sub { font-size: 13px; color: rgba(255,255,255,.5); line-height: 1.6; }
+  .ob-body { flex: 1; overflow-y: auto; padding: 0 16px 24px; background: #0F172A; }
+  .ob-tabs { display: flex; gap: 4px; background: rgba(255,255,255,.08); border-radius: 14px; padding: 4px; margin: 20px 0; }
+  .ob-tab { flex: 1; padding: 10px; border-radius: 10px; font-size: 13px; font-weight: 600; text-align: center; border: none; cursor: pointer; transition: all .2s; }
+  .ob-tab.active { background: var(--brand); color: white; }
+  .ob-tab.inactive { background: none; color: rgba(255,255,255,.5); }
+  .form-group { margin-bottom: 16px; }
+  .form-label { font-size: 12px; font-weight: 600; color: rgba(255,255,255,.6); margin-bottom: 6px; display: block; }
+  .form-row { display: flex; gap: 8px; }
+  .form-input { background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12); border-radius: 12px; padding: 13px 14px; font-size: 14px; color: white; width: 100%; outline: none; }
+  .form-input::placeholder { color: rgba(255,255,255,.3); }
+  .gender-btns { display: flex; gap: 8px; }
+  .gender-btn { flex: 1; padding: 12px; border-radius: 12px; border: 1.5px solid rgba(255,255,255,.15); background: none; color: rgba(255,255,255,.5); font-size: 13px; font-weight: 600; cursor: pointer; }
+  .gender-btn.active { background: rgba(232,89,60,.15); border-color: var(--brand); color: var(--brand); }
+  .submit-btn { width: 100%; padding: 15px; border-radius: 14px; background: var(--brand); border: none; color: white; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 8px; }
+
+  /* ── 스크린: 결과 ── */
+  .result-screen { background: linear-gradient(180deg, #0F172A 0%, #1E293B 60%, var(--gray-50) 100%); }
+  .result-header { padding: 44px 16px 0; }
+  .result-back { color: white; font-size: 22px; cursor: pointer; }
+  .result-title { font-size: 20px; font-weight: 800; color: white; margin: 16px 0 6px; }
+  .result-title span { color: var(--brand); }
+  .result-body { flex: 1; overflow-y: auto; padding: 16px; }
+  .result-card { background: white; border-radius: 20px; padding: 18px; box-shadow: var(--shadow-card); margin-bottom: 14px; }
+  .rc-label { font-size: 11px; color: var(--gray-400); font-weight: 600; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 10px; }
+  .pillars-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 14px; }
+  .pillar-col { text-align: center; background: var(--gray-50); border-radius: 10px; padding: 10px 6px; }
+  .pillar-hdr { font-size: 9px; color: var(--gray-500); margin-bottom: 4px; }
+  .pillar-cheongan { font-size: 18px; font-weight: 800; color: var(--gray-900); }
+  .pillar-jiji { font-size: 14px; color: var(--gray-500); margin-top: 2px; }
+  .pillar-kr { font-size: 9px; color: var(--gray-400); margin-top: 2px; }
+  .ohaeng-bars { display: flex; flex-direction: column; gap: 8px; }
+  .obar-row { display: flex; align-items: center; gap: 10px; }
+  .obar-label { width: 52px; font-size: 12px; font-weight: 600; flex-shrink: 0; }
+  .obar-track { flex: 1; height: 8px; border-radius: 99px; background: var(--gray-100); overflow: hidden; }
+  .obar-fill { height: 100%; border-radius: 99px; transition: width .7s ease; }
+  .obar-pct { width: 32px; font-size: 11px; color: var(--gray-500); text-align: right; }
+  .obar-tag { width: 32px; font-size: 10px; font-weight: 700; }
+  .tag-weak { color: var(--red); }
+  .tag-strong { color: var(--green); }
+  .result-summary { font-size: 13px; color: var(--gray-700); line-height: 1.7; background: var(--gray-50); border-radius: 12px; padding: 14px; margin-bottom: 14px; }
+  .result-cta { width: 100%; padding: 15px; border-radius: 14px; background: var(--brand); border: none; color: white; font-size: 15px; font-weight: 700; cursor: pointer; }
+
+  /* ── 스크린: 장소상세 ── */
+  .pd-hero { height: 220px; background: linear-gradient(135deg, #EAF3DE 0%, #E6F1FB 100%); display: flex; align-items: center; justify-content: center; font-size: 64px; position: relative; flex-shrink: 0; }
+  .pd-back { position: absolute; top: 44px; left: 14px; width: 34px; height: 34px; border-radius: 50%; background: rgba(255,255,255,.9); display: flex; align-items: center; justify-content: center; font-size: 14px; cursor: pointer; }
+  .pd-share { position: absolute; top: 44px; right: 14px; width: 34px; height: 34px; border-radius: 50%; background: rgba(255,255,255,.9); display: flex; align-items: center; justify-content: center; font-size: 14px; cursor: pointer; }
+  .pd-body { flex: 1; overflow-y: auto; padding: 20px 16px 32px; background: white; }
+  .pd-name { font-size: 22px; font-weight: 800; color: var(--gray-900); margin-bottom: 4px; }
+  .pd-addr { font-size: 13px; color: var(--gray-500); margin-bottom: 12px; display: flex; align-items: center; gap: 4px; }
+  .pd-section-title { font-size: 13px; font-weight: 700; color: var(--gray-900); margin-bottom: 8px; margin-top: 16px; }
+  .pd-reason { font-size: 13px; color: var(--gray-700); line-height: 1.7; }
+  .pd-sns-card { border: 1px solid var(--gray-200); border-radius: 12px; padding: 12px; display: flex; gap: 10px; align-items: flex-start; margin-bottom: 8px; }
+  .pd-sns-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+  .pd-expert { display: flex; align-items: center; gap: 6px; background: rgba(34,197,94,.08); border: 1px solid rgba(34,197,94,.2); border-radius: 10px; padding: 10px 12px; margin-bottom: 12px; font-size: 12px; color: #14532D; font-weight: 600; }
+  .pd-cta { display: flex; gap: 8px; position: sticky; bottom: 0; background: white; padding: 12px 0 0; }
+  .pd-btn { flex: 1; padding: 13px; border-radius: 14px; border: none; font-size: 14px; font-weight: 700; cursor: pointer; }
+  .pd-btn-kakao { background: #FEE500; color: #3A1D1D; }
+  .pd-btn-save { background: var(--gray-100); color: var(--gray-700); }
+
+  /* ── 구현 현황 패널 ── */
+  .status-panel { background: #1E293B; padding: 20px 24px; overflow-y: auto; }
+  .sp-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; color: white; }
+  .sp-section { margin-bottom: 20px; }
+  .sp-section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #64748B; margin-bottom: 10px; }
+  .sp-item { display: flex; align-items: center; gap-10px; gap: 10px; padding: 8px 0; border-bottom: 1px solid #334155; }
+  .sp-item:last-child { border-bottom: none; }
+  .sp-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .dot-done { background: var(--green); }
+  .dot-todo { background: var(--amber); }
+  .dot-missing { background: #EF4444; }
+  .sp-name { font-size: 13px; color: #CBD5E1; flex: 1; }
+  .sp-status { font-size: 11px; font-weight: 600; }
+  .status-done { color: var(--green); }
+  .status-todo { color: var(--amber); }
+  .status-missing { color: #EF4444; }
+
+  /* ── 진행률 ── */
+  .progress-ring-wrap { display: flex; flex-direction: column; align-items: center; padding: 20px 0 10px; }
+  .progress-label { font-size: 24px; font-weight: 800; color: white; margin-top: 8px; }
+  .progress-sub { font-size: 12px; color: #64748B; }
+
+  /* ── 전환 ── */
+  .nav-item.screen-btn { cursor: pointer; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .screen { animation: fadeIn .25s ease; }
+
+  /* 레이더 차트 */
+  .radar-wrap { display: flex; justify-content: center; padding: 10px 0; }
+  svg.radar { overflow: visible; }
+</style>
+</head>
+<body>
+<div class="viewer">
+
+  <!-- ═══════════════════════════════
+       사이드바
+  ══════════════════════════════════ -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <h1>🗺️ 명당지도</h1>
+      <p>서비스 구현 현황 뷰어 · F단계 완료</p>
+    </div>
+
+    <div style="flex:1; overflow-y:auto;">
+      <div class="nav-section">
+        <div class="nav-section-label">화면 미리보기</div>
+        <button class="nav-item screen-btn active" onclick="switchScreen('map', this)">
+          <span class="icon">🗺️</span> 지도 메인
+        </button>
+        <button class="nav-item screen-btn" onclick="switchScreen('onboarding', this)">
+          <span class="icon">🔮</span> 온보딩/사주입력
+        </button>
+        <button class="nav-item screen-btn" onclick="switchScreen('result', this)">
+          <span class="icon">📊</span> 오행 분석 결과
+        </button>
+        <button class="nav-item screen-btn" onclick="switchScreen('place', this)">
+          <span class="icon">📍</span> 장소 상세
+        </button>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-label">구현 현황</div>
+        <button class="nav-item screen-btn" onclick="switchScreen('status', this)">
+          <span class="icon">✅</span> 완료 항목
+          <span class="badge done">F단계</span>
+        </button>
+        <button class="nav-item screen-btn" onclick="switchScreen('todo', this)">
+          <span class="icon">🚀</span> G단계 TODO
+          <span class="badge todo">대기</span>
+        </button>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-label">기술 스택</div>
+        <div style="padding: 4px 8px;">
+          <div style="display:flex; flex-direction:column; gap:6px;">
+            <div style="display:flex; align-items:center; gap:8px; padding:6px 8px; background:#334155; border-radius:8px;">
+              <span style="font-size:12px;">⚡</span><span style="font-size:12px; color:#CBD5E1;">Next.js 14 App Router</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; padding:6px 8px; background:#334155; border-radius:8px;">
+              <span style="font-size:12px;">🗄️</span><span style="font-size:12px; color:#CBD5E1;">Supabase + RLS</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; padding:6px 8px; background:#334155; border-radius:8px;">
+              <span style="font-size:12px;">🐻</span><span style="font-size:12px; color:#CBD5E1;">Zustand 4 (persist)</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; padding:6px 8px; background:#334155; border-radius:8px;">
+              <span style="font-size:12px;">🗺️</span><span style="font-size:12px; color:#CBD5E1;">Kakao Maps SDK</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; padding:6px 8px; background:#334155; border-radius:8px;">
+              <span style="font-size:12px;">🎞️</span><span style="font-size:12px; color:#CBD5E1;">Framer Motion 11</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 진행률 -->
+    <div style="border-top: 1px solid #334155; padding: 16px;">
+      <div style="font-size:11px; color:#64748B; text-align:center; margin-bottom:8px; font-weight:600; text-transform:uppercase; letter-spacing:.06em;">전체 구현률</div>
+      <div style="display:flex; gap:12px; align-items:center;">
+        <div style="flex:1;">
+          <div style="height:8px; background:#334155; border-radius:99px; overflow:hidden;">
+            <div style="width:68%; height:100%; background: linear-gradient(90deg, var(--green), #86EFAC); border-radius:99px;"></div>
+          </div>
+        </div>
+        <div style="font-size:14px; font-weight:800; color:white;">68%</div>
+      </div>
+      <div style="font-size:11px; color:#64748B; text-align:center; margin-top:6px;">F단계 완료 · G단계 대기</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════
+       메인 영역
+  ══════════════════════════════════ -->
+  <div class="main">
+    <div class="topbar">
+      <span class="stage-badge stage-f">✅ F단계 완료</span>
+      <span class="stage-badge stage-g">⏳ G단계 대기</span>
+      <span class="topbar-title" id="topbar-title">지도 메인 — MapClient + KakaoMap</span>
+      <span class="topbar-sub">모바일 375×812 기준</span>
+    </div>
+
+    <div class="content">
+      <!-- ─── 폰 목업 ─── -->
+      <div class="phone-wrap" id="phone-wrap">
+        <div class="phone-frame">
+          <div class="phone-notch"></div>
+          <div class="phone-screen" id="phone-screen">
+
+            <!-- ── 스크린 1: 지도 메인 ── -->
+            <div class="screen active" id="screen-map">
+              <!-- 지도 배경 -->
+              <div class="map-bg">
+                <div style="width:100%;height:100%;background:linear-gradient(160deg,#E8F0E3 0%,#D4E6CC 40%,#C8DEC0 100%);"></div>
+                <!-- 도로 -->
+                <div class="map-road-h" style="top:45%;background:#F0EAD8;height:8px;opacity:.8;"></div>
+                <div class="map-road-h" style="top:60%;background:#F0EAD8;height:5px;opacity:.6;"></div>
+                <div class="map-road-h" style="top:30%;background:#F0EAD8;height:4px;opacity:.5;"></div>
+                <div class="map-road-v" style="left:35%;background:#F0EAD8;width:8px;opacity:.8;"></div>
+                <div class="map-road-v" style="left:65%;background:#F0EAD8;width:5px;opacity:.6;"></div>
+                <!-- 강 -->
+                <div style="position:absolute;top:52%;left:0;right:0;height:18px;background:linear-gradient(90deg,#A8C8F0,#7EB3E8,#A8C8F0);opacity:.7;border-radius:2px;"></div>
+              </div>
+
+              <!-- 필터바 -->
+              <div class="filter-bar">
+                <div class="personalized-toggle">
+                  <span>✨ 내 사주 맞춤 — 🔥 💧 부족</span>
+                  <span style="font-size:12px;opacity:.8;">ON</span>
+                </div>
+                <div class="ohaeng-chips">
+                  <button class="ohaeng-chip" style="background:#1F2937;color:white;">전체</button>
+                  <button class="ohaeng-chip chip-화" style="outline:2px solid var(--화-hex);">🔥 화 火</button>
+                  <button class="ohaeng-chip chip-수" style="outline:2px solid var(--수-hex);">💧 수 水</button>
+                  <button class="ohaeng-chip" style="background:var(--목-bg);color:var(--목-hex);">🌿 목 木</button>
+                  <button class="ohaeng-chip" style="background:var(--금-bg);color:var(--금-hex);">⚡ 금 金</button>
+                  <button class="ohaeng-chip" style="background:var(--토-bg);color:var(--토-hex);">🌏 토 土</button>
+                </div>
+              </div>
+
+              <!-- 마커들 -->
+              <div class="marker selected" style="top:38%;left:52%;">
+                <div class="marker-dot lg" style="background:var(--화-hex);color:white;">🔥</div>
+                <div class="marker-label" style="color:var(--화-hex);">북악산 명당</div>
+              </div>
+              <div class="marker" style="top:25%;left:28%;">
+                <div class="marker-dot md" style="background:var(--수-hex);color:white;">💧</div>
+              </div>
+              <div class="marker" style="top:42%;left:20%;">
+                <div class="marker-dot lg" style="background:var(--수-hex);color:white;">💧</div>
+                <div class="marker-label" style="color:var(--수-hex);">한강수변공원</div>
+              </div>
+              <div class="marker" style="top:32%;left:68%;">
+                <div class="marker-dot sm" style="background:var(--목-hex);color:white;">🌿</div>
+              </div>
+              <div class="marker" style="top:55%;left:40%;">
+                <div class="marker-dot sm" style="background:var(--토-hex);color:white;">🌏</div>
+              </div>
+              <div class="marker" style="top:20%;left:55%;">
+                <div class="marker-dot md" style="background:var(--화-hex);color:white;">🔥</div>
+              </div>
+              <div class="marker" style="top:48%;left:72%;">
+                <div class="marker-dot md" style="background:var(--수-hex);color:white;">💧</div>
+              </div>
+
+              <!-- 일진 배너 -->
+              <div class="ilshin-overlay">
+                <div style="font-size:10px;color:#92400E;font-weight:600;margin-bottom:3px;">🌟 오늘의 일진</div>
+                <div class="ilshin-grade">대길 95점</div>
+                <div class="ilshin-score-bar"><div class="ilshin-score-fill" style="width:95%;"></div></div>
+                <div style="font-size:10px;color:#92400E;line-height:1.5;">🔥화 기운이 당신의<br>부족 오행을 채워줘요</div>
+              </div>
+
+              <!-- 바텀시트 (열린 상태) -->
+              <div class="bottom-sheet" style="transform:translateY(0);">
+                <div class="bs-handle"></div>
+                <div class="bs-img">🏔️</div>
+                <div class="bs-body">
+                  <div class="ohaeng-badges">
+                    <span class="ohaeng-badge" style="background:var(--화-bg);color:var(--화-hex);">🔥 화(火)</span>
+                    <span class="ohaeng-badge" style="background:var(--토-bg);color:var(--토-hex);">🌏 토(土)</span>
+                    <span style="font-size:11px;padding:4px 8px;border-radius:99px;background:#F0FDF4;color:#14532D;font-weight:600;">✅ 전문가 검증</span>
+                  </div>
+                  <div class="bs-name">북악산 백악마루</div>
+                  <div class="bs-addr">📍 서울 종로구 청운동</div>
+                  <div class="trust-bar-wrap">
+                    <span style="font-size:10px;color:#94A3B8;">신뢰도</span>
+                    <div class="trust-bar-track"><div class="trust-bar-fill" style="width:93%;background:linear-gradient(90deg,#E8593C,#E8593C99);"></div></div>
+                    <span style="font-size:11px;font-weight:700;color:#E8593C;">93점 · 최고 명당</span>
+                  </div>
+                  <div class="bs-reason">풍수지리의 핵심인 배산임수(背山臨水) 원칙에 부합하며, 화(火) 기운이 강한 남향 양지바른 터로 사업운·명예운 상승에 탁월합니다.</div>
+                  <div class="bs-actions">
+                    <button class="bs-btn bs-btn-primary">🗺️ 카카오맵 열기</button>
+                    <button class="bs-btn bs-btn-secondary">🔖 저장</button>
+                    <button class="bs-btn bs-btn-secondary">📤 공유</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ── 스크린 2: 온보딩 ── -->
+            <div class="screen" id="screen-onboarding" style="background:#0F172A;">
+              <div class="ob-header">
+                <div class="ob-back">←</div>
+                <div style="text-align:center;">
+                  <div style="font-size:13px;color:white;font-weight:700;">명당지도</div>
+                  <div style="font-size:11px;color:rgba(255,255,255,.4);">내 오행 분석</div>
+                </div>
+                <div class="ob-title" style="margin-top:20px;">
+                  내 사주로<br><span>맞춤 명당</span>을 찾아드려요
+                </div>
+                <div class="ob-sub">생년월일을 입력하면 부족한 오행을 분석해<br>딱 맞는 풍수 명당을 추천해드립니다</div>
+              </div>
+              <div class="ob-body">
+                <div class="ob-tabs">
+                  <button class="ob-tab active">🗓️ 생년월일 입력</button>
+                  <button class="ob-tab inactive">⚡ 간단 테스트</button>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">출생 연도</label>
+                  <input class="form-input" type="text" placeholder="예: 1990" value="1990" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">출생 월 / 일</label>
+                  <div class="form-row">
+                    <input class="form-input" type="text" placeholder="월 (1~12)" value="7" />
+                    <input class="form-input" type="text" placeholder="일 (1~31)" value="15" />
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">출생 시각 (선택)</label>
+                  <input class="form-input" type="text" placeholder="예: 14 (오후 2시) · 모르면 비워두세요" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">성별 (선택)</label>
+                  <div class="gender-btns">
+                    <button class="gender-btn active">남성</button>
+                    <button class="gender-btn">여성</button>
+                  </div>
+                </div>
+
+                <!-- 카카오 로그인 버튼 -->
+                <div style="background:#FEE500;border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:10px;margin-bottom:12px;cursor:pointer;">
+                  <span style="font-size:18px;">💬</span>
+                  <span style="font-size:14px;font-weight:700;color:#3A1D1D;">카카오 로그인으로 저장하기</span>
+                </div>
+
+                <button class="submit-btn">🔮 내 오행 분석하기</button>
+              </div>
+            </div>
+
+            <!-- ── 스크린 3: 결과 ── -->
+            <div class="screen" id="screen-result" style="background:var(--gray-50);">
+              <div style="background:linear-gradient(180deg,#0F172A 0%,#1E293B 100%);padding:44px 16px 24px;flex-shrink:0;">
+                <div style="color:rgba(255,255,255,.6);font-size:14px;cursor:pointer;margin-bottom:12px;">← 뒤로</div>
+                <div style="font-size:13px;color:rgba(255,255,255,.5);margin-bottom:4px;">1990년 7월 15일생 · 남성</div>
+                <div style="font-size:20px;font-weight:800;color:white;line-height:1.4;">
+                  나는 <span style="color:var(--brand);">🔥화·💧수</span>가<br>부족한 사람이에요
+                </div>
+                <div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:6px;">음양오행 사주 분석 완료</div>
+              </div>
+
+              <div style="flex:1;overflow-y:auto;padding:16px;background:var(--gray-50);">
+                <!-- 4기둥 카드 -->
+                <div class="result-card">
+                  <div class="rc-label">📋 사주 4기둥 (四柱)</div>
+                  <div class="pillars-grid">
+                    <div class="pillar-col">
+                      <div class="pillar-hdr">년주 年柱</div>
+                      <div class="pillar-cheongan" style="color:var(--목-hex);">庚</div>
+                      <div class="pillar-jiji">午</div>
+                      <div class="pillar-kr">경오</div>
+                    </div>
+                    <div class="pillar-col">
+                      <div class="pillar-hdr">월주 月柱</div>
+                      <div class="pillar-cheongan" style="color:var(--화-hex);">丁</div>
+                      <div class="pillar-jiji">未</div>
+                      <div class="pillar-kr">정미</div>
+                    </div>
+                    <div class="pillar-col" style="background:rgba(232,89,60,.08);border:1.5px solid rgba(232,89,60,.2);">
+                      <div class="pillar-hdr">일주 日柱</div>
+                      <div class="pillar-cheongan" style="color:var(--화-hex);">壬</div>
+                      <div class="pillar-jiji">子</div>
+                      <div class="pillar-kr">임자 ★</div>
+                    </div>
+                    <div class="pillar-col">
+                      <div class="pillar-hdr">시주 時柱</div>
+                      <div class="pillar-cheongan" style="color:var(--gray-500);">—</div>
+                      <div class="pillar-jiji">—</div>
+                      <div class="pillar-kr">미입력</div>
+                    </div>
+                  </div>
+
+                  <!-- 오행 강도 바 -->
+                  <div class="ohaeng-bars">
+                    <div class="obar-row">
+                      <div class="obar-label" style="color:var(--목-hex);">🌿 목</div>
+                      <div class="obar-track"><div class="obar-fill" style="width:20%;background:var(--목-hex);"></div></div>
+                      <div class="obar-pct">20%</div>
+                      <div class="obar-tag"></div>
+                    </div>
+                    <div class="obar-row">
+                      <div class="obar-label" style="color:var(--화-hex);">🔥 화</div>
+                      <div class="obar-track"><div class="obar-fill" style="width:10%;background:var(--화-hex);"></div></div>
+                      <div class="obar-pct">10%</div>
+                      <div class="obar-tag tag-weak">부족↓</div>
+                    </div>
+                    <div class="obar-row">
+                      <div class="obar-label" style="color:var(--토-hex);">🌏 토</div>
+                      <div class="obar-track"><div class="obar-fill" style="width:35%;background:var(--토-hex);"></div></div>
+                      <div class="obar-pct">35%</div>
+                      <div class="obar-tag tag-strong">강함↑</div>
+                    </div>
+                    <div class="obar-row">
+                      <div class="obar-label" style="color:var(--금-hex);">⚡ 금</div>
+                      <div class="obar-track"><div class="obar-fill" style="width:25%;background:var(--금-hex);"></div></div>
+                      <div class="obar-pct">25%</div>
+                      <div class="obar-tag"></div>
+                    </div>
+                    <div class="obar-row">
+                      <div class="obar-label" style="color:var(--수-hex);">💧 수</div>
+                      <div class="obar-track"><div class="obar-fill" style="width:10%;background:var(--수-hex);"></div></div>
+                      <div class="obar-pct">10%</div>
+                      <div class="obar-tag tag-weak">부족↓</div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 요약 -->
+                <div class="result-card">
+                  <div class="rc-label">💬 AI 분석 요약</div>
+                  <div class="result-summary">
+                    🔥 화(火)와 💧 수(水) 기운이 현저히 부족합니다. 열정과 추진력을 키워줄 화(火) 기운의 장소를 자주 방문하면 사업운·명예운 상승에 도움이 됩니다. 강이나 바다, 분수대 근처의 수(水) 명당도 추천합니다.
+                  </div>
+                </div>
+
+                <button class="result-cta">🗺️ 내 명당 지도에서 보기</button>
+                <div style="margin-top:10px;display:flex;gap:8px;">
+                  <button style="flex:1;padding:11px;border-radius:12px;border:1px solid var(--gray-200);background:white;font-size:13px;color:var(--gray-700);font-weight:600;cursor:pointer;">📤 카카오톡 공유</button>
+                  <button style="flex:1;padding:11px;border-radius:12px;border:1px solid var(--gray-200);background:white;font-size:13px;color:var(--gray-700);font-weight:600;cursor:pointer;">💾 이미지 저장</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- ── 스크린 4: 장소 상세 ── -->
+            <div class="screen" id="screen-place" style="background:white;">
+              <div class="pd-hero">
+                🏔️
+                <div class="pd-back">←</div>
+                <div class="pd-share">📤</div>
+              </div>
+              <div class="pd-body">
+                <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;flex-wrap:wrap;">
+                  <span class="ohaeng-badge" style="background:var(--화-bg);color:var(--화-hex);border-radius:99px;padding:4px 10px;font-size:11px;font-weight:600;">🔥 화(火)</span>
+                  <span class="ohaeng-badge" style="background:var(--토-bg);color:var(--토-hex);border-radius:99px;padding:4px 10px;font-size:11px;font-weight:600;">🌏 토(土)</span>
+                  <span style="font-size:11px;padding:4px 10px;border-radius:99px;background:#F0FDF4;color:#14532D;font-weight:600;">✅ 전문가 검증</span>
+                </div>
+                <div class="pd-name">북악산 백악마루</div>
+                <div class="pd-addr">📍 서울 종로구 청운동 산 1-1</div>
+                <div class="trust-bar-wrap" style="margin-bottom:14px;">
+                  <span style="font-size:10px;color:#94A3B8;">신뢰도</span>
+                  <div class="trust-bar-track"><div class="trust-bar-fill" style="width:93%;background:linear-gradient(90deg,#E8593C,#E8593C99);"></div></div>
+                  <span style="font-size:11px;font-weight:700;color:#E8593C;">93점 · 최고 명당</span>
+                </div>
+
+                <div class="pd-expert">
+                  ✅ 풍수지리 전문가 현장 검증 완료
+                </div>
+
+                <div class="pd-section-title">🌀 풍수 근거</div>
+                <div class="pd-reason">
+                  북악산 정상부 백악마루는 조선시대부터 대표적인 화(火)·토(土) 기운의 명당으로 알려져 있습니다. 주산(主山)이 북악으로 강한 화기를 품고, 안산(案山)인 남산과의 기운 교류가 활발하여 사업운과 명예운 상승에 탁월한 효과가 있습니다. 배산임수(背山臨水)의 원칙에도 부합합니다.
+                </div>
+
+                <div class="pd-section-title">📱 SNS 큐레이션</div>
+                <div class="pd-sns-card">
+                  <div class="pd-sns-icon" style="background:#fce7f3;">📸</div>
+                  <div style="flex:1;">
+                    <div style="font-size:11px;font-weight:600;color:var(--gray-900);">@fengshui_korea</div>
+                    <div style="font-size:11px;color:var(--gray-500);margin-top:3px;line-height:1.5;">"북악산 백악마루에서 기도하고 사업 계약 성공했어요 🙏"</div>
+                    <div style="font-size:10px;color:var(--gray-400);margin-top:4px;">인스타그램 · 2024.03</div>
+                  </div>
+                </div>
+                <div class="pd-sns-card">
+                  <div class="pd-sns-icon" style="background:#fee2e2;">▶️</div>
+                  <div style="flex:1;">
+                    <div style="font-size:11px;font-weight:600;color:var(--gray-900);">풍수 채널</div>
+                    <div style="font-size:11px;color:var(--gray-500);margin-top:3px;line-height:1.5;">"서울 최고의 화(火) 기운 명당 TOP5"</div>
+                    <div style="font-size:10px;color:var(--gray-400);margin-top:4px;">유튜브 · 조회 12.4만</div>
+                  </div>
+                </div>
+
+                <div class="pd-cta">
+                  <button class="pd-btn pd-btn-kakao">🗺️ 카카오맵 길찾기</button>
+                  <button class="pd-btn pd-btn-save">🔖 저장</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- ── 스크린 5: 구현 현황 ── -->
+            <div class="screen" id="screen-status" style="background:white;overflow-y:auto;">
+              <div style="background:linear-gradient(135deg,#0F172A,#1E293B);padding:44px 16px 20px;flex-shrink:0;">
+                <div style="font-size:16px;font-weight:800;color:white;margin-bottom:4px;">✅ 구현 완료 항목</div>
+                <div style="font-size:12px;color:rgba(255,255,255,.5);">F단계까지 완료된 기능</div>
+              </div>
+              <div style="padding:16px;overflow-y:auto;">
+
+                <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#94A3B8;margin-bottom:10px;margin-top:4px;">🗺️ 지도 & 장소</div>
+                ${[
+                  ['카카오맵 SDK 연동 (CustomOverlay 마커)', true],
+                  ['오행 필터바 + 개인화 토글', true],
+                  ['장소 바텀시트 (framer drag-close)', true],
+                  ['신뢰도 바 + 전문가 검증 뱃지', true],
+                  ['장소 상세 SEO 페이지 + JSON-LD', true],
+                  ['Supabase places 테이블 + RLS', true],
+                  ['30개 시드 데이터 (서울15 + 전국15)', true],
+                ].map(([n, d]) => `
+                  <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #F1F5F9;">
+                    <span style="font-size:14px;">${d ? '✅' : '⬜'}</span>
+                    <span style="font-size:13px;color:#334155;">${n}</span>
+                  </div>`).join('')}
+
+                <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#94A3B8;margin:16px 0 10px;">🔮 사주 엔진</div>
+                ${[
+                  ['calculateSaju() — 4기둥 완전 계산', true],
+                  ['35개 단위 테스트 통과', true],
+                  ['오행 분포 분석 + 강약 정규화', true],
+                  ['일진(日辰) 엔진 + 개운 등급 계산', true],
+                  ['오행 상생/상극 관계 분석', true],
+                ].map(([n, d]) => `
+                  <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #F1F5F9;">
+                    <span style="font-size:14px;">${d ? '✅' : '⬜'}</span>
+                    <span style="font-size:13px;color:#334155;">${n}</span>
+                  </div>`).join('')}
+
+                <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#94A3B8;margin:16px 0 10px;">👤 인증 & 사용자</div>
+                ${[
+                  ['카카오 OAuth + Supabase Auth 연동', true],
+                  ['user_profiles DB + RLS', true],
+                  ['Zustand persist (SSR 안전)', true],
+                  ['북마크 로컬 + DB 동기화', true],
+                  ['온보딩 4단계 폼 (생년월일/퀵테스트)', true],
+                ].map(([n, d]) => `
+                  <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #F1F5F9;">
+                    <span style="font-size:14px;">${d ? '✅' : '⬜'}</span>
+                    <span style="font-size:13px;color:#334155;">${n}</span>
+                  </div>`).join('')}
+
+                <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#94A3B8;margin:16px 0 10px;">🔧 인프라 & API</div>
+                ${[
+                  ['API /places, /saju, /recommend, /ilshin', true],
+                  ['OG 이미지 API (Edge Runtime)', true],
+                  ['Naver 지역검색 → Claude Haiku 태깅 파이프라인', true],
+                  ['place_visits 방문 추적 테이블', true],
+                  ['trending_score 자동 업데이트 함수', true],
+                ].map(([n, d]) => `
+                  <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #F1F5F9;">
+                    <span style="font-size:14px;">${d ? '✅' : '⬜'}</span>
+                    <span style="font-size:13px;color:#334155;">${n}</span>
+                  </div>`).join('')}
+              </div>
+            </div>
+
+            <!-- ── 스크린 6: G단계 TODO ── -->
+            <div class="screen" id="screen-todo" style="background:white;overflow-y:auto;">
+              <div style="background:linear-gradient(135deg,#7C3AED,#4F46E5);padding:44px 16px 20px;flex-shrink:0;">
+                <div style="font-size:16px;font-weight:800;color:white;margin-bottom:4px;">🚀 G단계 — 다음 목표</div>
+                <div style="font-size:12px;color:rgba(255,255,255,.6);">리뷰·댓글 · 관리자 대시보드 · 푸시 알림</div>
+              </div>
+              <div style="padding:16px;overflow-y:auto;">
+
+                <div style="background:#FEF3C7;border:1px solid #FCD34D;border-radius:12px;padding:12px 14px;margin-bottom:16px;font-size:12px;color:#78350F;line-height:1.6;">
+                  ⚠️ <strong>핵심 미구현:</strong> 리뷰/별점, 관리자 CMS, 푸시 알림, 레이더 차트 연결, SNS 자동 수집 스케줄러
+                </div>
+
+                ${[
+                  {priority:'🔴 Critical', items:[
+                    ['reviews 테이블 + 별점/댓글 UI', '장소 상세에 리뷰 섹션 + Supabase reviews 테이블 + RLS'],
+                    ['관리자 대시보드 (/admin)', 'place CRUD, 신뢰도 편집, 콘텐츠 승인 UI'],
+                    ['SNS 수집 스케줄러 자동화', 'collect-places.ts를 Vercel Cron으로 주 3회 자동 실행'],
+                  ]},
+                  {priority:'🟠 High', items:[
+                    ['OhaengRadarChart 시각화 연결', 'result 페이지에 레이더 차트 실제 렌더링'],
+                    ['ShareCard Canvas API 완성', '카카오톡 공유 이미지 생성 + Web Share API'],
+                    ['Web Push 알림', '일진 등급 "대길" 시 아침 8시 푸시 알림'],
+                    ['장소 이미지 업로드', 'Supabase Storage + 관리자 이미지 관리'],
+                  ]},
+                  {priority:'🟡 Medium', items:[
+                    ['검색 기능', '장소명/지역 검색 + 오행 태그 검색'],
+                    ['방문 인증 기능', 'GPS 체크인 + place_visits 기록'],
+                    ['트렌딩 뷰 탭', '금주 인기 명당 TOP10 별도 탭'],
+                    ['퀵테스트 5문항 로직', 'QuickTestForm 결과 → 오행 추정 알고리즘'],
+                  ]},
+                  {priority:'🟢 Enhancement', items:[
+                    ['다크 모드', 'Tailwind dark: 클래스 일괄 적용'],
+                    ['오프라인 지원 (PWA)', 'next-pwa + service worker 캐싱'],
+                    ['지역별 필터 (시도/시군구)', '주소 기반 지역 필터 UI'],
+                    ['사주 DB 연동 검증', 'API saju route → user_profiles upsert 오류 처리 강화'],
+                  ]},
+                ].map(({priority, items}) => `
+                  <div style="margin-bottom:20px;">
+                    <div style="font-size:12px;font-weight:700;margin-bottom:10px;color:#334155;">${priority}</div>
+                    ${items.map(([title, desc]) => `
+                      <div style="display:flex;gap:10px;padding:10px 12px;background:#F8FAFC;border-radius:10px;margin-bottom:6px;border-left:3px solid ${priority.includes('🔴')?'#EF4444':priority.includes('🟠')?'#F97316':priority.includes('🟡')?'#EAB308':'#22C55E'};">
+                        <span style="font-size:14px;margin-top:1px;">⬜</span>
+                        <div>
+                          <div style="font-size:13px;font-weight:600;color:#0F172A;">${title}</div>
+                          <div style="font-size:11px;color:#64748B;margin-top:3px;line-height:1.5;">${desc}</div>
+                        </div>
+                      </div>`).join('')}
+                  </div>`).join('')}
+              </div>
+            </div>
+
+          </div><!-- /phone-screen -->
+        </div><!-- /phone-frame -->
+      </div><!-- /phone-wrap -->
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /viewer -->
+
+<script>
+const titles = {
+  map: '지도 메인 — MapClient + KakaoMap + 바텀시트',
+  onboarding: '온보딩 — BirthInputForm + KakaoLoginButton',
+  result: '오행 분석 결과 — OhaengResultCard + 4기둥',
+  place: '장소 상세 — SEO 페이지 + JSON-LD + SNS 큐레이션',
+  status: '구현 완료 항목 — F단계 전체',
+  todo: 'G단계 TODO — 우선순위별 미구현 항목',
+};
+
+function switchScreen(name, btn) {
+  // 모든 스크린 숨기기
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  // 해당 스크린 보이기
+  const target = document.getElementById('screen-' + name);
+  if (target) target.classList.add('active');
+
+  // 네비 활성화
+  document.querySelectorAll('.nav-item.screen-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+
+  // 탑바 타이틀
+  document.getElementById('topbar-title').textContent = titles[name] || '';
+}
+</script>
+</body>
+</html>

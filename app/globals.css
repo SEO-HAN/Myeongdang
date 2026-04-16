@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-brand:   #E8593C;
+    --color-mok:     #3B6D11;
+    --color-hwa:     #E8593C;
+    --color-to:      #BA7517;
+    --color-geum:    #888780;
+    --color-su:      #2563EB;
+  }
+
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply text-gray-900 bg-white;
+    font-family: -apple-system, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+  }
+}
+
+@layer utilities {
+  /* 오행 칩 공통 */
+  .ohaeng-chip {
+    @apply inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium;
+  }
+  .ohaeng-mok  { @apply bg-[#EAF3DE] text-[#3B6D11]; }
+  .ohaeng-hwa  { @apply bg-[#FAECE7] text-[#993C1D]; }
+  .ohaeng-to   { @apply bg-[#FAEEDA] text-[#854F0B]; }
+  .ohaeng-geum { @apply bg-[#F1EFE8] text-[#444441]; }
+  .ohaeng-su   { @apply bg-[#E6F1FB] text-[#185FA5]; }
+
+  /* 바텀시트 안전 영역 */
+  .pb-safe { padding-bottom: env(safe-area-inset-bottom, 16px); }
+  .pt-safe { padding-top:    env(safe-area-inset-top, 0px); }
+}

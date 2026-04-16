@@ -1,0 +1,123 @@
+{
+  "// 명당지도 Claude Code 프로젝트 설정": "hooks + permissions — git에 커밋됨 (팀 공유)",
+
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/session-start.sh",
+            "timeout": 30,
+            "statusMessage": "🗺️ 명당지도 환경 검증 중..."
+          }
+        ]
+      },
+      {
+        "matcher": "resume",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/session-start.sh",
+            "timeout": 45,
+            "statusMessage": "🗺️ 명당지도 세션 재개 — 상태 확인 중..."
+          }
+        ]
+      }
+    ],
+
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/pre-bash-guard.sh",
+            "timeout": 10,
+            "statusMessage": "🛡️ 명령어 안전성 검증 중..."
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/pre-write-validator.sh",
+            "timeout": 10,
+            "statusMessage": "🔍 파일 경로 & 보안 패턴 검증 중..."
+          }
+        ]
+      }
+    ],
+
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/post-write-linter.sh",
+            "timeout": 60,
+            "statusMessage": "⚙️ 자동 교정 루프 실행 중 (TS 체크)..."
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/post-bash-capture.sh",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+
+    "Stop": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/stop-gate.sh",
+            "timeout": 60,
+            "statusMessage": "🚦 CI 게이트 검사 중..."
+          }
+        ]
+      }
+    ]
+  },
+
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(npx ts-node *)",
+      "Bash(npx tsc *)",
+      "Bash(git status)",
+      "Bash(git log *)",
+      "Bash(git diff *)",
+      "Bash(git add *)",
+      "Bash(git stash *)",
+      "Bash(git pull)",
+      "Bash(ls *)",
+      "Bash(find * -name *)",
+      "Bash(cat *)",
+      "Bash(grep *)",
+      "Bash(echo *)",
+      "Bash(mkdir -p *)",
+      "Bash(chmod *)",
+      "Bash(jq *)"
+    ],
+    "deny": [
+      "Bash(git push --force*)",
+      "Bash(git reset --hard*)",
+      "Bash(git clean -f*)",
+      "Bash(rm -rf /)",
+      "Bash(curl * | bash)",
+      "Bash(wget * | bash)"
+    ]
+  }
+}

@@ -1,0 +1,951 @@
+[
+  {
+    "id": "mock-001",
+    "name": "관악산 연주대",
+    "address": "서울 관악구 신림동 산56-1",
+    "lat": 37.4443,
+    "lng": 126.9633,
+    "ohaeng": [
+      "화"
+    ],
+    "luck_types": [
+      "사업운",
+      "시험운",
+      "액막이",
+      "승진운"
+    ],
+    "place_type": "산",
+    "description_short": "서울 최대 화(火) 기운 명당. 불꽃 형상 바위 능선에서 강렬한 기운을 받는 곳.",
+    "reason_text": "관악산은 바위 능선이 불꽃처럼 치솟은 화형산(火形山)으로, 풍수지리에서 강한 화(火)의 기운이 집중되는 장소로 분류됩니다. 연주대는 정상 인근 기도 명소로, 같은 소원을 세 번 빌면 이루어진다는 전설이 전해집니다. 사주에 화 기운이 부족하거나, 정체된 기운에 변화를 원할 때 방문하면 좋습니다. 특히 사업 전환점이나 시험 앞두고 기도를 올리는 곳으로 역술가들 사이에서 손꼽힙니다.",
+    "expert_verified": true,
+    "trust_score": 92,
+    "image_urls": [
+      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800"
+    ],
+    "kakaomap_url": "https://map.kakao.com/link/search/관악산연주대",
+    "source_sns": [
+      "https://www.youtube.com/watch?v=example1",
+      "https://www.instagram.com/p/example1"
+    ],
+    "trending_score": 95,
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": "mock-002",
+    "name": "그랜드 하얏트 서울 로비",
+    "address": "서울 용산구 소월로 322",
+    "lat": 37.5387,
+    "lng": 126.9986,
+    "ohaeng": [
+      "화",
+      "토"
+    ],
+    "luck_types": [
+      "승진운",
+      "일운",
+      "재물운",
+      "인간관계"
+    ],
+    "place_type": "호텔",
+    "description_short": "남산 화기(火氣) + 용산 토기(土氣) 교차점. 중요한 비즈니스 미팅 전 방문하면 좋은 장소.",
+    "reason_text": "그랜드 하얏트 서울은 남산의 화형(火形) 기운을 정면으로 받으며, 배산임수(背山臨水) 지형에 위치한 도심 명당입니다. 로비 공간은 남산의 화기(火氣)와 용산의 안정된 토기(土氣)가 교차하는 지점으로, 역술가들 사이에서 중요한 계약이나 미팅 전 방문하면 기운이 좋다고 알려진 장소입니다. 특히 승진과 일운을 원하는 직장인들에게 추천됩니다.",
+    "expert_verified": true,
+    "trust_score": 85,
+    "image_urls": [
+      "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800"
+    ],
+    "kakaomap_url": "https://map.kakao.com/link/search/그랜드하얏트서울",
+    "source_sns": [
+      "https://www.instagram.com/p/example2"
+    ],
+    "trending_score": 72,
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": "mock-003",
+    "name": "한강 노을공원",
+    "address": "서울 마포구 하늘공원로 108-1",
+    "lat": 37.5666,
+    "lng": 126.8901,
+    "ohaeng": [
+      "수"
+    ],
+    "luck_types": [
+      "금전운",
+      "연애운",
+      "인간관계",
+      "건강운"
+    ],
+    "place_type": "공원",
+    "description_short": "한강이 굽어보이는 서울 서쪽 수(水) 기운의 핵심 명당. 재물 흐름과 인연 형성에 좋은 곳.",
+    "reason_text": "노을공원은 한강의 수기(水氣)가 응집되는 지점으로, 물이 넓게 흐르는 방향을 바라보는 위치가 재물의 흐름을 의미하는 풍수적 명당입니다. 일몰 시간에 서향으로 앉아 한강을 바라보면 금전운과 연애운을 북돋는다는 해석이 역술가들 사이에 있습니다. 수(水) 기운이 부족한 사주를 가진 분들에게 특히 추천되는 장소입니다.",
+    "expert_verified": false,
+    "trust_score": 78,
+    "image_urls": [
+      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800"
+    ],
+    "kakaomap_url": "https://map.kakao.com/link/search/노을공원",
+    "source_sns": [
+      "https://blog.naver.com/example3"
+    ],
+    "trending_score": 88,
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": "mock-004",
+    "name": "청계천 광통교",
+    "address": "서울 종로구 청계천로 광통교",
+    "lat": 37.5695,
+    "lng": 126.9846,
+    "ohaeng": [
+      "수"
+    ],
+    "luck_types": [
+      "재물운",
+      "인간관계",
+      "금전운"
+    ],
+    "place_type": "문화재",
+    "description_short": "서울 도심 한가운데 수(水) 기운이 흐르는 조선시대 명당 교량. 재물운과 인연운의 상징.",
+    "reason_text": "광통교는 조선시대부터 재물과 인연의 다리로 알려진 청계천의 핵심 지점입니다. 물이 흐르는 방향인 서에서 동으로 향하는 수기(水氣)의 흐름이 재물의 유입을 상징합니다. 도심 한복판에 위치해 접근성이 좋으며, 직장인들이 점심 산책 중 방문하기 좋습니다. 역술가 박용덕은 이 다리 위에서 소원을 빌면 인간관계와 재물운이 따른다고 언급한 바 있습니다.",
+    "expert_verified": false,
+    "trust_score": 80,
+    "image_urls": [
+      "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800"
+    ],
+    "kakaomap_url": "https://map.kakao.com/link/search/청계천광통교",
+    "source_sns": [
+      "https://www.instagram.com/p/example4"
+    ],
+    "trending_score": 65,
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": "mock-005",
+    "name": "북한산 백운대",
+    "address": "서울 은평구 진관동 산1-1",
+    "lat": 37.6587,
+    "lng": 126.9769,
+    "ohaeng": [
+      "목"
+    ],
+    "luck_types": [
+      "사업운",
+      "건강운",
+      "창업운",
+      "성장운"
+    ],
+    "place_type": "산",
+    "description_short": "서울 북쪽 목(木) 기운의 최강 명당. 강한 생명 에너지와 성장의 기운이 응집된 곳.",
+    "reason_text": "북한산 백운대는 목형산(木形山)의 전형으로, 나무처럼 곧게 뻗어 오른 화강암 봉우리에서 강한 목(木) 기운을 발산합니다. 사주에 목 기운이 부족하거나 사업을 시작하는 시기에 방문하면 생명력과 추진력을 보충할 수 있습니다. 특히 새로운 일을 시작하기 전 이 봉우리를 오르며 기운을 충전하는 것이 좋다고 역술가들은 조언합니다. 건강운 강화에도 효과적인 명당입니다.",
+    "expert_verified": true,
+    "trust_score": 88,
+    "image_urls": [
+      "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800"
+    ],
+    "kakaomap_url": "https://map.kakao.com/link/search/북한산백운대",
+    "source_sns": [
+      "https://www.youtube.com/watch?v=example5",
+      "https://blog.naver.com/example5"
+    ],
+    "trending_score": 82,
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": "mock-006",
+    "name": "경복궁 향원정",
+    "address": "서울 종로구 사직로 161 (경복궁 내)",
+    "lat": 37.5828,
+    "lng": 126.9774,
+    "ohaeng": [
+      "목",
+      "수"
+    ],
+    "luck_types": [
+      "학업운",
+      "명예운",
+      "창의운"
+    ],
+    "place_type": "문화재",
+    "description_short": "조선 왕실의 학문과 명예 기운이 응집된 경복궁 내 연못 정자. 학업운 최고의 명당.",
+    "reason_text": "향원정은 경복궁 후원 연못 한가운데 위치한 정자로, 목(木)과 수(水)의 기운이 조화를 이루는 명당입니다. 조선 왕조의 학문적 기운이 깃든 장소로, 시험이나 중요한 발표를 앞두고 방문하면 명료한 사고와 집중력을 얻는다고 알려져 있습니다. 역술사 김용택은 이 장소를 한국 최고의 학업운 명당 중 하나로 꼽습니다.",
+    "expert_verified": true,
+    "trust_score": 87,
+    "image_urls": [
+      "https://images.unsplash.com/photo-1555224732-95bbd70ab47e?w=800"
+    ],
+    "kakaomap_url": "https://map.kakao.com/link/search/경복궁향원정",
+    "source_sns": [
+      "https://news.naver.com/example6"
+    ],
+    "trending_score": 70,
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": "mock-007",
+    "name": "JW 메리어트 서울 정원",
+    "address": "서울 서초구 반포대로 177",
+    "lat": 37.5082,
+    "lng": 127.0012,
+    "ohaeng": [
+      "금"
+    ],
+    "luck_types": [
+      "금전운",
+      "재물운",
+      "결혼운",
+      "결실운"
+    ],
+    "place_type": "호텔",
+    "description_short": "강남 도심 금(金) 기운의 핵심. 재물과 결실의 기운이 모이는 고급 비즈니스 명당.",
+    "reason_text": "JW 메리어트 서울은 서초의 금형(金形) 지세 위에 위치한 도심 명당입니다. 강남 재물 기운의 중심지에 해당하며, 금(金) 기운이 부족한 사주를 가진 분들이 재물운과 결실운을 충전하기에 좋은 장소입니다. 특히 중요한 비즈니스 계약이나 결혼을 앞둔 분들에게 방문이 권장되는 곳입니다.",
+    "expert_verified": false,
+    "trust_score": 76,
+    "image_urls": [
+      "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800"
+    ],
+    "kakaomap_url": "https://map.kakao.com/link/search/JW메리어트서울",
+    "source_sns": [
+      "https://www.instagram.com/p/example7"
+    ],
+    "trending_score": 60,
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": "mock-008",
+    "name": "남산 팔각정",
+    "address": "서울 중구 남산공원길 105",
+    "lat": 37.5505,
+    "lng": 126.9882,
+    "ohaeng": [
+      "금"
+    ],
+    "luck_types": [
+      "결실운",
+      "수확운",
+      "명예운",
+      "재물운"
+    ],
+    "place_type": "공원",
+    "description_short": "서울 한복판 금(金) 기운의 결절점. 남산의 금형 지세에서 결실과 수확의 기운을 받는 명당.",
+    "reason_text": "남산 팔각정은 서울의 지형에서 금형(金形) 기운이 응집되는 핵심 포인트입니다. 서울 4개 방위를 한눈에 조망할 수 있는 이 장소는 풍수적으로 사방의 기운이 모이는 혈(穴) 자리에 해당합니다. 중요한 결실을 앞두거나, 한 해의 수확을 정리하는 시기에 방문하면 금 기운을 보충할 수 있습니다.",
+    "expert_verified": false,
+    "trust_score": 82,
+    "image_urls": [
+      "https://images.unsplash.com/photo-1559628233-100c798642d2?w=800"
+    ],
+    "kakaomap_url": "https://map.kakao.com/link/search/남산팔각정",
+    "source_sns": [
+      "https://blog.naver.com/example8",
+      "https://www.instagram.com/p/example8"
+    ],
+    "trending_score": 75,
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": "mock-009",
+    "name": "인왕산 기자암",
+    "address": "서울 종로구 인왕산로 1 (인왕산)",
+    "lat": 37.5843,
+    "lng": 126.9604,
+    "ohaeng": [
+      "토"
+    ],
+    "luck_types": [
+      "부동산운",
+      "안정운",
+      "가정운",
+      "재물운"
+    ],
+    "place_type": "산",
+    "description_short": "조선 시대부터 기도 명소로 손꼽힌 인왕산 토(土) 기운의 집결지. 안정과 뿌리의 기운.",
+    "reason_text": "인왕산 기자암은 조선 왕실에서도 기도를 올리던 역사 깊은 명당입니다. 거대한 바위가 토형(土形)의 안정된 기운을 상징하며, 부동산과 가정의 안정을 원하는 분들에게 추천됩니다. 이 장소의 토(土) 기운은 변화보다 안정을 원하는 사람, 부동산 투자나 새 집 마련을 앞둔 사람에게 특히 좋은 영향을 준다고 알려져 있습니다.",
+    "expert_verified": true,
+    "trust_score": 90,
+    "image_urls": [
+      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800"
+    ],
+    "kakaomap_url": "https://map.kakao.com/link/search/인왕산기자암",
+    "source_sns": [
+      "https://www.youtube.com/watch?v=example9",
+      "https://news.naver.com/example9"
+    ],
+    "trending_score": 78,
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": "mock-010",
+    "name": "국립중앙박물관 거울못",
+    "address": "서울 용산구 서빙고로 137",
+    "lat": 37.5235,
+    "lng": 126.9806,
+    "ohaeng": [
+      "토",
+      "수"
+    ],
+    "luck_types": [
+      "가정운",
+      "뿌리운",
+      "안정운",
+      "학업운"
+    ],
+    "place_type": "문화재",
+    "description_short": "민족의 역사와 기운이 응집된 용산 토(土)·수(水) 복합 명당. 뿌리와 정체성의 기운.",
+    "reason_text": "국립중앙박물관은 대한민국의 역사적 기운이 응집된 장소로, 토(土)의 안정적 기운과 거울못의 수(水) 기운이 조화를 이루는 복합 명당입니다. 가정의 화목과 뿌리 찾기, 정체성 확립이 필요한 시기에 방문하면 좋습니다. 자녀 교육이나 가정 안정을 원하는 분들에게 추천되는 도심 명당입니다.",
+    "expert_verified": false,
+    "trust_score": 72,
+    "image_urls": [
+      "https://images.unsplash.com/photo-1555224732-95bbd70ab47e?w=800"
+    ],
+    "kakaomap_url": "https://map.kakao.com/link/search/국립중앙박물관",
+    "source_sns": [
+      "https://blog.naver.com/example10"
+    ],
+    "trending_score": 55,
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": "mock-011",
+    "name": "창덕궁 후원 부용정",
+    "address": "서울 종로구 율곡로 99 (창덕궁 후원)",
+    "lat": 37.5804,
+    "lng": 126.9916,
+    "ohaeng": [
+      "목",
+      "수"
+    ],
+    "luck_types": [
+      "창의운",
+      "학업운",
+      "명예운",
+      "인간관계"
+    ],
+    "place_type": "문화재",
+    "description_short": "조선 최고의 정원 명당. 목(木)과 수(水)의 조화 속에 창의와 지혜의 기운이 깃든 곳.",
+    "reason_text": "창덕궁 후원은 조선 왕실이 자연과 합일(合一)하기 위해 조성한 비밀 정원으로, 목(木)과 수(水)의 기운이 완벽하게 조화를 이루는 풍수 명당입니다. 부용정 주변의 연못은 수기(水氣)의 집결지이며, 주변 나무들이 목기(木氣)를 보강합니다. 창의적인 일을 시작하거나 명예를 쌓고자 할 때 방문하면 좋습니다.",
+    "expert_verified": true,
+    "trust_score": 86,
+    "image_urls": [
+      "https://images.unsplash.com/photo-1555224732-95bbd70ab47e?w=800"
+    ],
+    "kakaomap_url": "https://map.kakao.com/link/search/창덕궁후원",
+    "source_sns": [
+      "https://news.naver.com/example11"
+    ],
+    "trending_score": 68,
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": "mock-012",
+    "name": "서울숲 군마상 광장",
+    "address": "서울 성동구 뚝섬로 273",
+    "lat": 37.5437,
+    "lng": 127.0374,
+    "ohaeng": [
+      "목"
+    ],
+    "luck_types": [
+      "건강운",
+      "창업운",
+      "성장운",
+      "연애운"
+    ],
+    "place_type": "공원",
+    "description_short": "한강 수기(水氣)를 받은 서울 동쪽 최대 목(木) 기운 공원. 새 출발과 성장의 기운.",
+    "reason_text": "서울숲은 한강의 수기(水氣)를 흡수해 자란 울창한 숲으로, 도심에서 가장 강한 목(木) 기운을 제공하는 공간입니다. 새로운 시작이나 사업을 앞두고 있을 때, 건강 회복이 필요할 때 방문하면 효과적입니다. 군마상 앞 광장은 특히 목 기운이 집중되는 포인트로 알려져 있습니다.",
+    "expert_verified": false,
+    "trust_score": 74,
+    "image_urls": [
+      "https://images.unsplash.com/photo-1448375240586-882707db888b?w=800"
+    ],
+    "kakaomap_url": "https://map.kakao.com/link/search/서울숲",
+    "source_sns": [
+      "https://www.instagram.com/p/example12"
+    ],
+    "trending_score": 80,
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": "mock-013",
+    "name": "롯데월드타워 서울스카이",
+    "address": "서울 송파구 올림픽로 300",
+    "lat": 37.5126,
+    "lng": 127.1024,
+    "ohaeng": [
+      "금"
+    ],
+    "luck_types": [
+      "금전운",
+      "재물운",
+      "목표달성운",
+      "승진운"
+    ],
+    "place_type": "도심",
+    "description_short": "수직 상승하는 금(金) 기운의 정점. 목표 달성과 재물 집중의 기운을 품은 서울 랜드마크.",
+    "reason_text": "롯데월드타워는 하늘을 향해 수직으로 치솟는 금형(金形) 건축물로, 강한 상승의 금 기운을 집약하고 있습니다. 최상층에 오를수록 서울의 모든 기운을 조감하게 되며, 목표 의식과 재물운 강화에 도움이 됩니다. 승진이나 사업 확장을 앞둔 분들에게 이 장소에서 명확한 목표를 다짐하는 것이 효과적이라고 알려져 있습니다.",
+    "expert_verified": false,
+    "trust_score": 71,
+    "image_urls": [
+      "https://images.unsplash.com/photo-1486325212027-8081e485255e?w=800"
+    ],
+    "kakaomap_url": "https://map.kakao.com/link/search/롯데월드타워",
+    "source_sns": [
+      "https://www.instagram.com/p/example13"
+    ],
+    "trending_score": 85,
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": "mock-014",
+    "name": "양재천 학의천 합류점",
+    "address": "서울 강남구 개포로 607",
+    "lat": 37.4818,
+    "lng": 127.053,
+    "ohaeng": [
+      "수"
+    ],
+    "luck_types": [
+      "금전운",
+      "인간관계",
+      "연애운"
+    ],
+    "place_type": "강",
+    "description_short": "두 물이 합쳐지는 수(水) 기운 집결지. 재물과 인연이 모이는 강남 숨겨진 명당.",
+    "reason_text": "양재천과 학의천이 합류하는 이 지점은 두 물줄기의 수기(水氣)가 합쳐지는 풍수적 명당입니다. 물이 합류하는 지점은 재물과 인연이 모인다는 풍수 원리에 따라, 금전운과 연애운을 원하는 분들에게 추천되는 강남의 숨겨진 명소입니다. 접근성이 좋아 출퇴근 시 잠시 들르기에도 좋습니다.",
+    "expert_verified": false,
+    "trust_score": 68,
+    "image_urls": [
+      "https://images.unsplash.com/photo-1466685462924-3a3c3e2f9c85?w=800"
+    ],
+    "kakaomap_url": "https://map.kakao.com/link/search/양재천",
+    "source_sns": [
+      "https://blog.naver.com/example14"
+    ],
+    "trending_score": 62,
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": "mock-015",
+    "name": "북악스카이웨이 팔각정",
+    "address": "서울 성북구 북악산로 267",
+    "lat": 37.598,
+    "lng": 126.9805,
+    "ohaeng": [
+      "화",
+      "토"
+    ],
+    "luck_types": [
+      "명예운",
+      "승진운",
+      "사업운",
+      "안정운"
+    ],
+    "place_type": "공원",
+    "description_short": "청와대·북악을 마주보는 화(火)·토(土) 복합 명당. 국가 기운이 모이는 서울 파워 포인트.",
+    "reason_text": "북악스카이웨이 팔각정은 청와대와 북악산의 기운을 정면으로 받는 특별한 장소입니다. 화형산(火形山)인 북악의 화기(火氣)와 청와대를 포함한 토(土)의 안정 기운이 교차합니다. 역술사들은 이 장소를 국가 기운이 응집되는 포인트로 지목하며, 명예와 승진을 원하는 공직자나 정치인들이 방문하기도 하는 곳으로 알려져 있습니다.",
+    "expert_verified": false,
+    "trust_score": 77,
+    "image_urls": [
+      "https://images.unsplash.com/photo-1559628233-100c798642d2?w=800"
+    ],
+    "kakaomap_url": "https://map.kakao.com/link/search/북악스카이웨이",
+    "source_sns": [
+      "https://blog.naver.com/example15"
+    ],
+    "trending_score": 58,
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": "mock-016",
+    "name": "계룡산 삼불봉",
+    "address": "충남 공주시 반포면 계룡산로 236-34",
+    "lat": 36.363,
+    "lng": 127.2148,
+    "ohaeng": [
+      "화"
+    ],
+    "luck_types": [
+      "사업운",
+      "명예운",
+      "액막이",
+      "승진운"
+    ],
+    "place_type": "산",
+    "description_short": "한국 4대 명산 계룡산의 강렬한 화(火) 기운 결절점. 풍수지리 최고의 기도 명당.",
+    "reason_text": "계룡산은 예로부터 신성한 산으로 여겨져 온 한국 최고의 풍수 명산입니다. 삼불봉의 바위 지형은 불꽃이 치솟는 화형(火形)으로, 변화와 상승의 에너지가 가장 강하게 모이는 지점입니다. 역술인들은 계룡산을 정기(精氣)의 발원지로 꼽으며, 사업의 새로운 전환점이나 중요한 결정을 앞두고 방문하기를 권합니다.",
+    "expert_verified": true,
+    "trust_score": 95,
+    "image_urls": [
+      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800"
+    ],
+    "kakaomap_url": "https://map.kakao.com/link/search/계룡산삼불봉",
+    "source_sns": [
+      "https://www.youtube.com/watch?v=example16",
+      "https://news.naver.com/example16"
+    ],
+    "trending_score": 90,
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": "mock-017",
+    "name": "지리산 노고단",
+    "address": "전남 구례군 산동면 지리산길 489",
+    "lat": 35.2884,
+    "lng": 127.4661,
+    "ohaeng": [
+      "목"
+    ],
+    "luck_types": [
+      "건강운",
+      "장수운",
+      "창업운",
+      "성장운"
+    ],
+    "place_type": "산",
+    "description_short": "한반도 최고의 목(木) 기운 명당. 지리산 신령의 기운이 응집된 건강과 생명력의 성지.",
+    "reason_text": "지리산 노고단은 한반도 최대의 목기(木氣) 명당으로 손꼽힙니다. 천년 이상의 기운이 쌓인 이 장소는 건강 회복과 생명력 충전에 탁월한 효과가 있다고 알려져 있습니다. 노고단의 드넓은 초원과 울창한 숲에서 발산하는 목 기운은 신체적, 정신적 재충전을 원하는 분들에게 최적의 장소입니다. 큰 사업을 시작하거나 새로운 삶을 열고자 하는 분들에게도 추천됩니다.",
+    "expert_verified": true,
+    "trust_score": 93,
+    "image_urls": [
+      "https://images.unsplash.com/photo-1448375240586-882707db888b?w=800"
+    ],
+    "kakaomap_url": "https://map.kakao.com/link/search/지리산노고단",
+    "source_sns": [
+      "https://www.youtube.com/watch?v=example17"
+    ],
+    "trending_score": 87,
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": "mock-018",
+    "name": "마이산 탑사",
+    "address": "전북 진안군 마령면 마이산남로 367",
+    "lat": 35.7345,
+    "lng": 127.5201,
+    "ohaeng": [
+      "토"
+    ],
+    "luck_types": [
+      "부동산운",
+      "안정운",
+      "소원성취",
+      "가정운"
+    ],
+    "place_type": "사찰",
+    "description_short": "말귀 모양 두 봉우리 사이의 독특한 토(土) 기운 사찰. 소원 성취와 안정의 전국구 명당.",
+    "reason_text": "마이산은 두 개의 거대한 바위봉우리가 마치 말의 귀처럼 솟아 있는 독특한 지형으로, 강력한 토형(土形) 기운을 발산합니다. 탑사는 이 두 봉우리 사이의 기운이 집중되는 계곡에 위치하며, 자연적으로 쌓인 돌탑들이 토(土) 기운을 더욱 증폭시킵니다. 안정과 뿌리내림을 원하는 분들, 부동산 관련 소원이 있는 분들에게 특별히 추천됩니다.",
+    "expert_verified": true,
+    "trust_score": 91,
+    "image_urls": [
+      "https://images.unsplash.com/photo-1519904981063-b0cf448d479e?w=800"
+    ],
+    "kakaomap_url": "https://map.kakao.com/link/search/마이산탑사",
+    "source_sns": [
+      "https://www.youtube.com/watch?v=example18",
+      "https://news.naver.com/example18"
+    ],
+    "trending_score": 83,
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": "mock-019",
+    "name": "해동용궁사",
+    "address": "부산 기장군 기장읍 용궁길 86",
+    "lat": 35.1886,
+    "lng": 129.2234,
+    "ohaeng": [
+      "수"
+    ],
+    "luck_types": [
+      "금전운",
+      "연애운",
+      "소원성취",
+      "인간관계"
+    ],
+    "place_type": "사찰",
+    "description_short": "바다 위에 세워진 한국 유일의 해상 사찰. 동해 수(水) 기운을 직접 받는 전국구 명당.",
+    "reason_text": "해동용궁사는 한국에서 유일하게 바닷가 절벽 위에 세워진 사찰로, 동해의 강렬한 수기(水氣)를 직접 받는 독보적인 명당입니다. 바다의 수기가 절 전체를 감싸는 형태로, 재물이 들어오고 인연이 맺어진다는 풍수적 해석이 있습니다. 연애운과 금전운 향상을 원하는 전국의 방문객이 몰리는 명소입니다.",
+    "expert_verified": true,
+    "trust_score": 94,
+    "image_urls": [
+      "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800"
+    ],
+    "kakaomap_url": "https://map.kakao.com/link/search/해동용궁사",
+    "source_sns": [
+      "https://www.youtube.com/watch?v=example19",
+      "https://www.instagram.com/p/example19"
+    ],
+    "trending_score": 96,
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": "mock-020",
+    "name": "팔공산 갓바위 (관봉석조여래좌상)",
+    "address": "대구 동구 팔공산로185안길 14",
+    "lat": 35.9891,
+    "lng": 128.7215,
+    "ohaeng": [
+      "화"
+    ],
+    "luck_types": [
+      "시험운",
+      "학업운",
+      "소원성취",
+      "사업운"
+    ],
+    "place_type": "문화재",
+    "description_short": "수능·시험 합격 기도 전국 1위 명당. 팔공산 화(火) 기운이 집중된 소원 성취의 성지.",
+    "reason_text": "팔공산 갓바위는 대한민국에서 시험 합격 기도 명소로 가장 유명한 곳입니다. 화형(火形) 산세의 팔공산 정상 부근에 위치한 이 석불은 강력한 화기(火氣)를 발산하며, 지식과 명예를 상징하는 화 기운이 학업운과 시험운에 직접 영향을 미친다고 알려져 있습니다. 수능 시즌이 되면 전국에서 수십만 명이 방문하는 화 기운의 최강 명당입니다.",
+    "expert_verified": true,
+    "trust_score": 97,
+    "image_urls": [
+      "https://images.unsplash.com/photo-1559628233-100c798642d2?w=800"
+    ],
+    "kakaomap_url": "https://map.kakao.com/link/search/팔공산갓바위",
+    "source_sns": [
+      "https://news.naver.com/example20",
+      "https://www.youtube.com/watch?v=example20"
+    ],
+    "trending_score": 99,
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": "mock-021",
+    "name": "속리산 법주사",
+    "address": "충북 보은군 속리산면 법주사로 405",
+    "lat": 36.5375,
+    "lng": 127.8095,
+    "ohaeng": [
+      "토",
+      "목"
+    ],
+    "luck_types": [
+      "안정운",
+      "부동산운",
+      "가정운",
+      "건강운"
+    ],
+    "place_type": "사찰",
+    "description_short": "속리산 토(土) 기운의 중심 천년 고찰. 가정의 안정과 뿌리내림의 기운이 응집된 곳.",
+    "reason_text": "법주사는 속리산의 넉넉한 토기(土氣) 품속에 자리 잡은 신라 시대의 고찰입니다. 속리산은 토형(土形) 산세의 전형으로, 어머니의 품처럼 안정되고 포용적인 기운이 특징입니다. 가정의 화목과 안정을 원하거나, 부동산 관련 중요한 결정을 앞두고 있을 때 방문하면 좋습니다. 수십 미터 높이의 철제 미륵대불 앞에서 소원을 빌면 성취된다는 이야기도 전해집니다.",
+    "expert_verified": true,
+    "trust_score": 89,
+    "image_urls": [
+      "https://images.unsplash.com/photo-1519904981063-b0cf448d479e?w=800"
+    ],
+    "kakaomap_url": "https://map.kakao.com/link/search/법주사",
+    "source_sns": [
+      "https://blog.naver.com/example21"
+    ],
+    "trending_score": 72,
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": "mock-022",
+    "name": "오대산 월정사 전나무 숲길",
+    "address": "강원 평창군 진부면 오대산로 374-8",
+    "lat": 37.7455,
+    "lng": 128.5596,
+    "ohaeng": [
+      "목"
+    ],
+    "luck_types": [
+      "건강운",
+      "힐링운",
+      "학업운",
+      "창의운"
+    ],
+    "place_type": "사찰",
+    "description_short": "천년 수령 전나무들이 만드는 압도적 목(木) 기운의 사찰. 몸과 마음의 완전한 재충전.",
+    "reason_text": "월정사 전나무 숲길은 수백 년 된 전나무들이 줄지어 서 있는 강원도 최대의 목기(木氣) 명당입니다. 걷는 것만으로도 강력한 목(木) 기운을 흡수할 수 있으며, 도시의 피로와 스트레스를 녹여내는 치유의 기운이 특징입니다. 창의적 작업이 막히거나 건강 회복이 필요할 때 1~2박 방문을 역술가들이 강력히 추천하는 곳입니다.",
+    "expert_verified": true,
+    "trust_score": 92,
+    "image_urls": [
+      "https://images.unsplash.com/photo-1448375240586-882707db888b?w=800"
+    ],
+    "kakaomap_url": "https://map.kakao.com/link/search/월정사",
+    "source_sns": [
+      "https://www.youtube.com/watch?v=example22",
+      "https://news.naver.com/example22"
+    ],
+    "trending_score": 85,
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": "mock-023",
+    "name": "경주 불국사",
+    "address": "경북 경주시 불국로 385",
+    "lat": 35.79,
+    "lng": 129.3317,
+    "ohaeng": [
+      "금"
+    ],
+    "luck_types": [
+      "재물운",
+      "결실운",
+      "명예운",
+      "부동산운"
+    ],
+    "place_type": "문화재",
+    "description_short": "신라 천년의 금(金) 기운이 응집된 유네스코 세계문화유산. 결실과 수확의 최고 명당.",
+    "reason_text": "불국사는 신라 천년 왕조의 기운이 응집된 한국 최고의 금형(金形) 명당입니다. 석가탑과 다보탑 앞에 서면 천 년을 이어온 결실의 기운을 느낄 수 있습니다. 금(金) 기운은 재물의 수확과 사업의 결실을 의미하며, 중요한 프로젝트의 마무리나 투자 결실을 앞두고 방문하면 좋다고 알려져 있습니다.",
+    "expert_verified": true,
+    "trust_score": 94,
+    "image_urls": [
+      "https://images.unsplash.com/photo-1555224732-95bbd70ab47e?w=800"
+    ],
+    "kakaomap_url": "https://map.kakao.com/link/search/불국사",
+    "source_sns": [
+      "https://news.naver.com/example23",
+      "https://www.youtube.com/watch?v=example23"
+    ],
+    "trending_score": 88,
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": "mock-024",
+    "name": "한라산 백록담",
+    "address": "제주 서귀포시 토평동 산15-1",
+    "lat": 33.3617,
+    "lng": 126.5295,
+    "ohaeng": [
+      "수"
+    ],
+    "luck_types": [
+      "금전운",
+      "지혜운",
+      "장수운",
+      "연애운"
+    ],
+    "place_type": "산",
+    "description_short": "한반도 수(水) 기운의 근원. 하늘과 맞닿은 분화구 호수의 순수한 수기로 완전한 재충전.",
+    "reason_text": "한라산 백록담은 한반도의 수기(水氣) 원천으로 꼽히는 특별한 장소입니다. 분화구 안에 담긴 물은 하늘의 기운을 직접 받으며, 이 수기는 지혜와 유연성, 재물의 흐름을 상징합니다. 한라산 정상까지 오르는 과정 자체가 자신을 정화하는 수련이기도 합니다. 제주 방문 시 한라산 등정을 통해 수기를 충전하는 것을 역술가들이 권장합니다.",
+    "expert_verified": true,
+    "trust_score": 90,
+    "image_urls": [
+      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800"
+    ],
+    "kakaomap_url": "https://map.kakao.com/link/search/한라산백록담",
+    "source_sns": [
+      "https://www.youtube.com/watch?v=example24"
+    ],
+    "trending_score": 80,
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": "mock-025",
+    "name": "설악산 대청봉",
+    "address": "강원 속초시 설악산로 1091",
+    "lat": 38.1196,
+    "lng": 128.4657,
+    "ohaeng": [
+      "금"
+    ],
+    "luck_types": [
+      "결실운",
+      "금전운",
+      "목표달성운",
+      "건강운"
+    ],
+    "place_type": "산",
+    "description_short": "한국 최고봉 설악산의 강렬한 금(金) 기운. 단단하고 순수한 결실의 기운이 응집된 명당.",
+    "reason_text": "설악산 대청봉은 한국의 금형(金形) 산 중에서도 가장 강한 금 기운을 발산하는 곳으로 알려져 있습니다. 날카로운 암릉과 하얀 화강암은 금 기운의 정수를 보여주며, 이 기운은 재물의 견고함과 목표 달성의 에너지를 상징합니다. 중요한 인생의 전환점에서 이 봉우리에 오르면 강력한 결심과 에너지를 얻을 수 있다고 합니다.",
+    "expert_verified": true,
+    "trust_score": 91,
+    "image_urls": [
+      "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800"
+    ],
+    "kakaomap_url": "https://map.kakao.com/link/search/설악산대청봉",
+    "source_sns": [
+      "https://blog.naver.com/example25",
+      "https://www.instagram.com/p/example25"
+    ],
+    "trending_score": 78,
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": "mock-026",
+    "name": "강화도 마니산 참성단",
+    "address": "인천 강화군 화도면 흥왕리 산180",
+    "lat": 37.6147,
+    "lng": 126.4304,
+    "ohaeng": [
+      "화"
+    ],
+    "luck_types": [
+      "액막이",
+      "사업운",
+      "명예운",
+      "소원성취"
+    ],
+    "place_type": "문화재",
+    "description_short": "단군 시대부터 하늘에 제사를 지낸 한국 최고(最古) 화(火) 기운 제단. 국가 기운의 근원.",
+    "reason_text": "마니산 참성단은 단군왕검이 하늘에 제사를 지냈다는 전설의 제단으로, 한국에서 가장 오래되고 강력한 화기(火氣)의 집결지입니다. 하늘을 향해 열린 이 제단은 천지의 기운이 교통하는 특별한 포인트로, 중요한 소원을 빌거나 사업의 시작을 고하기에 최적의 장소입니다. 매년 개천절에 제례가 행해지는 국가 차원의 명당입니다.",
+    "expert_verified": true,
+    "trust_score": 93,
+    "image_urls": [
+      "https://images.unsplash.com/photo-1559628233-100c798642d2?w=800"
+    ],
+    "kakaomap_url": "https://map.kakao.com/link/search/마니산참성단",
+    "source_sns": [
+      "https://news.naver.com/example26",
+      "https://www.youtube.com/watch?v=example26"
+    ],
+    "trending_score": 76,
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": "mock-027",
+    "name": "전주 경기전",
+    "address": "전북 전주시 완산구 태조로 44",
+    "lat": 35.8151,
+    "lng": 127.1522,
+    "ohaeng": [
+      "토"
+    ],
+    "luck_types": [
+      "부동산운",
+      "가정운",
+      "안정운",
+      "재물운"
+    ],
+    "place_type": "문화재",
+    "description_short": "조선 왕조 뿌리의 기운이 깃든 전주 토(土) 기운 명당. 가문과 뿌리의 안정적 기운.",
+    "reason_text": "경기전은 조선왕조 태조 이성계의 어진이 모셔진 곳으로, 한 왕조의 뿌리와 정통성의 기운이 응집된 토(土) 기운의 명당입니다. 이 장소의 토기는 흔들리지 않는 안정과 가문의 번영을 상징합니다. 가정의 화목이나 부동산, 집과 관련된 소원을 품고 방문하면 좋습니다. 은행나무가 늘어선 경내 산책로가 특히 기운이 좋다고 알려져 있습니다.",
+    "expert_verified": false,
+    "trust_score": 79,
+    "image_urls": [
+      "https://images.unsplash.com/photo-1555224732-95bbd70ab47e?w=800"
+    ],
+    "kakaomap_url": "https://map.kakao.com/link/search/전주경기전",
+    "source_sns": [
+      "https://www.instagram.com/p/example27"
+    ],
+    "trending_score": 65,
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": "mock-028",
+    "name": "금정산 범어사",
+    "address": "부산 금정구 범어사로 250",
+    "lat": 35.2874,
+    "lng": 129.0484,
+    "ohaeng": [
+      "목",
+      "수"
+    ],
+    "luck_types": [
+      "건강운",
+      "인간관계",
+      "학업운",
+      "창업운"
+    ],
+    "place_type": "사찰",
+    "description_short": "금정산 목(木) 기운과 범어(梵魚) 수(水) 기운의 조화. 부산 최고의 복합 오행 명당.",
+    "reason_text": "범어사는 금정산의 울창한 숲속에 자리한 신라 천년 고찰로, 목(木)과 수(水)의 기운이 조화롭게 교차하는 복합 명당입니다. 금정산에서 흘러내리는 맑은 물이 수기(水氣)를 보강하고, 울창한 소나무 숲이 목기(木氣)를 제공합니다. 건강 회복과 새로운 인연을 원하는 분들에게 부산에서 가장 추천하는 명당입니다.",
+    "expert_verified": true,
+    "trust_score": 88,
+    "image_urls": [
+      "https://images.unsplash.com/photo-1519904981063-b0cf448d479e?w=800"
+    ],
+    "kakaomap_url": "https://map.kakao.com/link/search/범어사",
+    "source_sns": [
+      "https://blog.naver.com/example28",
+      "https://news.naver.com/example28"
+    ],
+    "trending_score": 73,
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": "mock-029",
+    "name": "청계산 매바위",
+    "address": "경기 성남시 수정구 고등동 산85",
+    "lat": 37.4012,
+    "lng": 127.0542,
+    "ohaeng": [
+      "토"
+    ],
+    "luck_types": [
+      "부동산운",
+      "안정운",
+      "재물운",
+      "가정운"
+    ],
+    "place_type": "산",
+    "description_short": "수도권 최대 토(土) 기운 바위. 땅의 안정적 기운을 직접 받는 경기 남부 숨겨진 명당.",
+    "reason_text": "청계산 매바위는 거대한 화강암 바위로 강력한 토기(土氣)를 발산하는 수도권의 숨겨진 명당입니다. 이 바위에 등을 기대고 앉으면 땅의 안정된 기운이 그대로 전달된다고 알려져 있습니다. 부동산 거래나 이사, 새 집 마련을 앞두고 방문하면 좋으며, 가정의 안정을 기원하는 주변 주민들이 자주 찾는 곳입니다.",
+    "expert_verified": false,
+    "trust_score": 70,
+    "image_urls": [
+      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800"
+    ],
+    "kakaomap_url": "https://map.kakao.com/link/search/청계산매바위",
+    "source_sns": [
+      "https://blog.naver.com/example29"
+    ],
+    "trending_score": 55,
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": "mock-030",
+    "name": "남해 금산 보리암",
+    "address": "경남 남해군 상주면 보리암로 665",
+    "lat": 34.9041,
+    "lng": 127.9698,
+    "ohaeng": [
+      "수"
+    ],
+    "luck_types": [
+      "소원성취",
+      "연애운",
+      "금전운",
+      "건강운"
+    ],
+    "place_type": "사찰",
+    "description_short": "한국 3대 기도 도량 보리암. 남해 바다 수(水) 기운을 정면으로 받는 소원 성취 최강 명당.",
+    "reason_text": "보리암은 한국 3대 기도 도량 중 하나로 꼽히는 곳으로, 남해 바다의 강력한 수기(水氣)를 직접 받는 해상 명당입니다. 금산 정상의 이 사찰에서는 남해의 넓은 바다가 한눈에 내려다보이며, 이 수기가 소원 성취에 강력한 힘이 된다고 알려져 있습니다. 특히 연애운과 금전운을 원하는 분들이 전국에서 찾아오는 수기 명당의 정점입니다.",
+    "expert_verified": true,
+    "trust_score": 95,
+    "image_urls": [
+      "https://images.unsplash.com/photo-1466685462924-3a3c3e2f9c85?w=800"
+    ],
+    "kakaomap_url": "https://map.kakao.com/link/search/남해보리암",
+    "source_sns": [
+      "https://www.youtube.com/watch?v=example30",
+      "https://news.naver.com/example30",
+      "https://www.instagram.com/p/example30"
+    ],
+    "trending_score": 92,
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  }
+]

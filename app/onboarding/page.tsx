@@ -36,7 +36,7 @@ export default function OnboardingPage() {
 
       setSaju(
         { year: data.year, month: data.month, day: data.day, hour: data.hour },
-        { name: data.name, gender: data.gender },
+        { name: data.name, gender: data.gender, luckPreference: data.luckPreference },
       )
 
       const params = new URLSearchParams({
@@ -44,6 +44,7 @@ export default function OnboardingPage() {
         m: String(data.month),
         d: String(data.day),
         ...(data.hour !== undefined && { h: String(data.hour) }),
+        ...(data.luckPreference && { luck: data.luckPreference }),
       })
       router.push(`/result?${params.toString()}`)
     } catch (err) {

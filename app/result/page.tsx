@@ -12,7 +12,7 @@ import { OHAENG_EMOJI } from '@/lib/saju/types'
 import ResultClient from './ResultClient'
 
 interface PageProps {
-  searchParams: { y?: string; m?: string; d?: string; h?: string; g?: string }
+  searchParams: { y?: string; m?: string; d?: string; h?: string; g?: string; luck?: string }
 }
 
 // ─────────────────────────────────────────────
@@ -59,7 +59,8 @@ export default function ResultPage({ searchParams }: PageProps) {
   const m = Number(searchParams.m)
   const d = Number(searchParams.d)
   const h = searchParams.h !== undefined ? Number(searchParams.h) : undefined
-  const g = (searchParams.g as 'male' | 'female') || undefined
+  const g    = (searchParams.g as 'male' | 'female') || undefined
+  const luck = searchParams.luck || undefined
 
   // 파라미터 누락 시 온보딩으로
   if (!y || !m || !d) {
@@ -80,5 +81,5 @@ export default function ResultPage({ searchParams }: PageProps) {
   // 서버에서 직접 계산 (API 없이!)
   const result = calculateSaju({ year: y, month: m, day: d, hour: h, gender: g })
 
-  return <ResultClient result={result} />
+  return <ResultClient result={result} luckPreference={luck} />
 }

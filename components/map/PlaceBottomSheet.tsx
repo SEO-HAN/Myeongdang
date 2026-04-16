@@ -91,7 +91,6 @@ function SnsCard({ url, author, snippet, snsType }: {
   snippet?: string
   snsType: string
 }) {
-  const primaryOhaeng: Ohaeng = 'hwa' as never // fallback
   return (
     <a
       href={url}

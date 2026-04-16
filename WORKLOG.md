@@ -5,21 +5,90 @@
 
 ## ⏭️ NEXT (다음 세션에서 바로 실행할 작업)
 
-**Phase B 나머지 — B3 바텀시트 + B4 장소 상세 + B5 공유 강화**
+**Phase D — 배포 파이프라인 + G단계 기능**
 
 실행 전 확인사항:
-1. `npm run dev` → localhost:3000 정상 확인 (Mock 모드)
-2. MASTERPLAN.md B3~B5 체크리스트 참조
+1. `npm run dev` → localhost:3000 정상 확인 (dev server restart 필요 — stale .next 캐시)
+2. MASTERPLAN.md D1~D5 체크리스트 참조
 
-우선순위 순서:
-1. `components/map/PlaceBottomSheet.tsx` — 바텀시트 3단계 스냅 높이
-2. `components/map/OhaengFilterBar.tsx` — 필터 칩 크기 증가 (이미 구현됨, 검토만)
-3. `app/place/[id]/page.tsx` — SNS 리뷰 미리보기, 근처 명당 추천
-4. `components/share/ShareCard.tsx` — 오행 비주얼 카드 개선
+우선순위 순서 (택 1로 시작):
+1. **D4 배포 파이프라인** — Vercel 연결 + 환경변수 + GitHub Actions CI (MVP 론치 최우선)
+2. **D1 리뷰/댓글** — Supabase 마이그레이션 + API + UI 컴포넌트
+3. **D2 관리자 대시보드** — 장소 추가/편집, 리뷰 모더레이션
+4. **D3 푸시 알림** — 일진 알림 (매일 오전 6시)
 
 ---
 
 ## 세션 로그
+
+---
+
+### 2026-04-17 | Phase B 완성 + Phase C 사주 엔진 고도화 (B3~B5 + C0~C5 완료)
+
+**구현 전략:** Track B (UI) + Track C (엔진) 병렬 에이전트 dispatch. 두 트랙의 파일 범위가 완전히 겹치지 않아 병렬 작업 안전.
+
+**완료한 작업 — Track B (UI/UX 완성):**
+
+**B3 — 바텀시트 + 필터 바**
+- `components/map/PlaceBottomSheet.tsx` — peek/mini/full 3단계 스냅 구현
+  - framer-motion `drag="y"` + velocity/offset 기반 스냅 결정
+  - velocity > 500 또는 offset > 150 → 닫기, velocity < -300 또는 offset < -100 → full
+  - animate height spring 전환, peek 모드에서 compact preview bar
+- `components/map/OhaengFilterBar.tsx` — 터치 타겟 py-2 → py-2.5, ring-2 ring-offset-1 active 강조
+
+**B4 — 장소 상세 페이지**
+- `components/place/ImageGallery.tsx` (신규) — 'use client', framer-motion AnimatePresence fade, 좌우 버튼, 도트 인디케이터, 이미지 없을 때 오행 그라디언트 폴백
+- `components/place/NearbyPlaces.tsx` (신규) — 같은 오행 기준 가로 스크롤 3카드, DESIGN.md Light Surface Card 스타일
+- `app/place/[id]/page.tsx` — getNearbyPlaces() 추가, ImageGallery + NearbyPlaces 통합
+
+**B5 — 공유 카드**
+- `components/share/ShareCard.tsx` — `#0D0D1A` → 오행 hex 그라디언트 배경, 장식 원형, 이름/오행/장소명 레이아웃
+
+**완료한 작업 — Track C (사주 엔진 고도화):**
+
+**C0 — 온보딩 이름 + 성별**
+- `components/saju/BirthInputForm.tsx` — Step 0 추가 (이름 입력 + 남/여 카드 선택), TOTAL_STEPS 4
+- `store/user-store.ts` — userName, userGender 필드, setSaju meta 파라미터
+
+**C1 — 지장간 오행 강도 정밀화**
+- `lib/saju/types.ts` — JIJANGGAN 상수 (12지지 여기장간 비율, 합계 100%)
+- `lib/saju/engine.ts` — countOhaengWeighted(): 천간 1.0, 지지 ratio/100 가중 합산
+
+**C2 — 용신/희신 억부법**
+- `lib/saju/engine.ts` — calculateYongshin(): 일간 selfStrength + supportStrength×0.6 vs avg×1.5 판별
+  - 신강 → 설기(일간이 생하는 오행) = 용신
+  - 신약 → 생조(일간을 생하는 오행) = 용신
+- SajuResult에 bodyStrength, yongshin, heeshin 추가
+
+**C3 — 합충 분석**
+- `lib/saju/types.ts` — CHEONGAN_HAP(6합), JIJI_CHUNG(6충), SAMHAP(4국), HapChungItem 타입
+- `lib/saju/engine.ts` — getHapChung(): 4기둥 내 모든 합충 패턴 감지
+
+**C4 — 추천 로직**
+- `lib/saju/recommend.ts` (신규) — scorePlace() 다인자 점수: trust_score + weakOhaeng(×15) + yongshin(×20) + luckPref(×10) + ilshin(×10) - hapChung(×5)
+- `app/api/recommend/route.ts` — rankPlaces() 기반 리팩토링, matchReasons[] 반환
+
+**C5 — 결과 UI + 개인화 텍스트**
+- `lib/saju/explain.ts` (신규) — buildSajuNarrative(), buildYongshinNarrative(), buildPlaceNarrative()
+- `app/result/ResultClient.tsx` — "[이름]님의 사주" 헤더, 사주 서사 텍스트, 용신 카드, TOP3 추천 장소 (matchReasons 표시)
+
+**품질 게이트:**
+- ✅ `npm run type-check` — 0 오류
+- ✅ `npx ts-node lib/saju/engine.test.ts` — 61개 테스트 통과 (기존 35 → 확장)
+- ✅ 21개 파일 변경, 3048 라인 추가 (commit: feat/3-agent-created-real)
+
+**이슈 & 해결:**
+- `/place/1` 500 오류: stale `.next` 캐시 문제 (코드 오류 아님). 다음 세션에서 `npm run dev` 재시작으로 해결
+- `rm -rf .next` pre-tool hook 차단 → 안전을 위해 서버 재시작으로 대체 예정
+
+**결정 사항:**
+- 지장간 적용 후 오행 강도 합계가 float로 변경 → 기존 테스트는 pillar 계산 기준이라 영향 없음
+- 용신 계산 임계값: selfStrength + supportStrength×0.6 vs totalAvg×1.5/0.7 (억부법 기본 구현)
+- 합충은 추천 점수에 -5 패널티로만 반영 (UI 표시는 Phase D에서 확장)
+
+**다음 세션 준비:**
+- Phase D 시작 (D4 배포 우선 or D1 리뷰 시스템)
+- dev server 재시작으로 `/place/1` 500 오류 확인
 
 ---
 

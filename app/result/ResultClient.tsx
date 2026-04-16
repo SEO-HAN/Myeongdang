@@ -24,6 +24,7 @@ import type { ScoredPlace } from '@/lib/saju/recommend'
 
 interface ResultClientProps {
   result: SajuResult
+  luckPreference?: string
 }
 
 // ── SVG 아이콘 ────────────────────────────────────────────────
@@ -75,10 +76,12 @@ function MapPinIcon() {
   )
 }
 
-export default function ResultClient({ result }: ResultClientProps) {
-  const router    = useRouter()
-  const setSaju   = useUserStore((s) => s.setSaju)
-  const userName  = useUserStore((s) => s.userName)
+export default function ResultClient({ result, luckPreference: luckProp }: ResultClientProps) {
+  const router          = useRouter()
+  const setSaju         = useUserStore((s) => s.setSaju)
+  const userName        = useUserStore((s) => s.userName)
+  const luckStored      = useUserStore((s) => s.luckPreference)
+  const luckPreference  = luckProp ?? luckStored ?? undefined
   const [copied, setCopied]     = useState(false)
   const [topPlaces, setTopPlaces] = useState<ScoredPlace[]>([])
 
@@ -93,14 +96,14 @@ export default function ResultClient({ result }: ResultClientProps) {
   // 추천 명당 TOP3 fetch
   useEffect(() => {
     const { year, month, day, hour } = result.input
-    const url = `/api/recommend?y=${year}&m=${month}&d=${day}${hour !== undefined ? `&h=${hour}` : ''}`
+    const url = `/api/recommend?y=${year}&m=${month}&d=${day}${hour !== undefined ? `&h=${hour}` : ''}${luckPreference ? `&luck=${encodeURIComponent(luckPreference)}` : ''}`
     fetch(url)
       .then((r) => r.json())
       .then((data) => {
         if (data.recommendations) setTopPlaces(data.recommendations.slice(0, 3))
       })
       .catch(() => {}) // 추천 실패해도 페이지 동작
-  }, [result.input])
+  }, [result.input, luckPreference])
 
   const handleCopyLink = useCallback(() => {
     navigator.clipboard.writeText(window.location.href).then(() => {

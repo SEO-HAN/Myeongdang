@@ -231,12 +231,13 @@ export default function ShareCardButton({ result, className = '' }: ShareCardBut
     const url = `${window.location.origin}/result?y=${result.input.year}&m=${result.input.month}&d=${result.input.day}${result.input.hour !== undefined ? `&h=${result.input.hour}` : ''}`
 
     if (typeof window !== 'undefined' && (window as any).Kakao?.isInitialized?.()) {
-      (window as any).Kakao.Share.sendDefault({
+      const ogUrl = `${window.location.origin}/api/og?y=${result.input.year}&m=${result.input.month}&d=${result.input.day}`
+      ;(window as any).Kakao.Share.sendDefault({
         objectType: 'feed',
         content: {
           title: `나는 ${result.weakOhaeng.map((o) => `${OHAENG_EMOJI[o]}${o}`).join(', ')}가 부족한 사람 — 명당지도`,
           description: result.summary.slice(0, 60),
-          imageUrl: `${window.location.origin}/og-image.png`,
+          imageUrl: ogUrl,
           link: { mobileWebUrl: url, webUrl: url },
         },
         buttons: [

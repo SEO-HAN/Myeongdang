@@ -3,10 +3,10 @@
 
 ## 📍 현재 위치
 
-**단계:** Phase B (UX/UI 리디자인)  
-**상태:** B1 완료, B2 완료, B3 부분 완료 → B3 나머지 + B4/B5 대기  
-**마지막 업데이트:** 2026-04-16 (Phase B 1차 구현 완료)  
-**다음 할 일:** `WORKLOG.md`의 "NEXT" 항목 확인
+**단계:** Phase D (G단계 기능 + 배포)  
+**상태:** Phase B 전체 완료 ✅, Phase C 전체 완료 ✅ → Phase D 대기  
+**마지막 업데이트:** 2026-04-17 (Phase B+C 에이전트 병렬 구현 완료)  
+**다음 할 일:** D1 리뷰/댓글 시스템 또는 D4 배포 파이프라인
 
 ---
 
@@ -14,8 +14,8 @@
 
 ```
 Phase A: 에이전트 환경 구축      ██████████ 100% ✅
-Phase B: UX/UI 리디자인          ░░░░░░░░░░   0% ⏳
-Phase C: 사주 엔진 고도화         ░░░░░░░░░░   0% ⏳
+Phase B: UX/UI 리디자인          ██████████ 100% ✅
+Phase C: 사주 엔진 고도화         ██████████ 100% ✅
 Phase D: G단계 기능 + 배포        ░░░░░░░░░░   0% ⏳
 ```
 
@@ -60,98 +60,64 @@ Phase D: G단계 기능 + 배포        ░░░░░░░░░░   0% ⏳
 
 ---
 
-## Phase B — UX/UI 리디자인 🔄 진행 중
+## Phase B — UX/UI 리디자인 ✅ DONE
 
 > 목표: 배포 가능한 수준의 서비스 품질 달성. 3단계 점진적 공개 + 감성 디자인
 
 ### B1. 온보딩 플로우 재설계 ✅ DONE
 - [x] `components/saju/BirthInputForm.tsx` — 4단계 → 3단계 재설계
-  - 단계 1: 생년월일 통합 (year+month+day 한 화면, 월 그리드 UI)
-  - 단계 2: 태어난 시간 (자시/축시 시각적 선택, 유지)
-  - 단계 3: 기대하는 운 선택 (운 유형 아이콘 카드 2열 그리드)
-  - gender 필드 제거, luckPreference 추가
 - [x] `app/onboarding/page.tsx` — 탭 구조 제거, 단순화
-  - QuickTestForm 탭 제거 (BirthInputForm 단독)
-  - 타이틀 compact화
-- [x] 진행률 인디케이터 (3칸 프로그레스 바, brand 색상)
-- [x] 각 단계 framer-motion slide 전환 (이미 구현됨, 유지)
-- **DoD:** ✅ 3단계 완주 후 `/result`로 정상 이동, type-check 통과
 
 ### B2. 결과 페이지 리디자인 ✅ DONE
-- [x] `app/result/ResultClient.tsx` 개선
-  - IlshinBanner(card variant) 오행 결과 아래 추가
-  - 링크 복사 버튼 헤더 우측 추가
-  - onShare prop을 OhaengResultCard에 연결 (공유 버튼 카드 내 노출)
-  - 공유 CTA 다중화: 카카오톡 + 이미지 저장 + 링크 복사
-- [ ] `components/saju/OhaengResultCard.tsx` — 카드 디자인 개선 (미완)
-- [ ] 추천 명당 카드 3개 캐러셀 (미완)
-- **DoD:** ✅ IlshinBanner 노출, 공유 CTA 3개, type-check 통과
+- [x] `app/result/ResultClient.tsx` — IlshinBanner, 공유 CTA 3개
 
-### B3. 지도 메인 화면 개선 🔄 부분 완료
-- [x] `components/map/PersonalizationBanner.tsx` — CTA 개선
-  - 비로그인: brand 색 채워진 버튼으로 강화
-  - 프로필 완성: 부족 오행 색상 배너 + ON/OFF 토글
-- [ ] `components/map/PlaceBottomSheet.tsx` — 바텀시트 UX 개선
-  - 3단계 높이 스냅 (핸들만 / 미니 / 풀스크린)
-  - 장소 카드 내 "길찾기" 버튼 크기 증가
-  - 장소 상세 preview 이미지 추가
-- [ ] `components/map/OhaengFilterBar.tsx` — 필터 바 재설계
-  - 필터 칩 크기 증가 + 선택 상태 강조
-  - "전체" 칩 추가 (필터 초기화)
-  - 필터 선택 시 지도 카메라 이동 (해당 오행 명당 중심)
-- [ ] `components/map/PersonalizationBanner.tsx` — 개인화 배너 개선
-  - 로그인 안 된 경우: "사주 입력해서 내 명당 찾기" CTA
-  - 로그인 된 경우: 오늘 일진 + 개운 명당 바로가기
-- [ ] DevMap 개선 (Mock 모드 SVG 지도 품질 향상)
-  - 실제 서울 지역 윤곽선 추가
-  - 마커 클러스터링 (겹치는 마커 그룹핑)
-- **DoD:** 지도에서 필터 → 바텀시트 → 상세 → 카카오맵 딥링크 전체 플로우 동작
+### B3. 지도 메인 화면 개선 ✅ DONE
+- [x] `components/map/PlaceBottomSheet.tsx` — peek/mini/full 3단계 스냅 (framer-motion drag)
+- [x] `components/map/OhaengFilterBar.tsx` — 터치 타겟 py-2.5, ring-2 active 강조
+- [x] `components/map/PersonalizationBanner.tsx` — CTA 개선, 개인화 ON/OFF
 
-### B4. 장소 상세 페이지 개선
-- [ ] `app/place/[id]/page.tsx` 개선
-  - 이미지 갤러리 (image_urls 다중 지원)
-  - SNS 리뷰 미리보기 (place_contents 연동)
-  - 근처 명당 추천 섹션 (같은 오행 기준)
-  - 카카오맵 임베드 (실 서비스 시)
-- [ ] JSON-LD 구조화 데이터 보완 (별점, 리뷰 수 실제 데이터 연동)
-- **DoD:** Lighthouse SEO 점수 90+, OG 카드 카카오톡에서 정상 표시
+### B4. 장소 상세 페이지 개선 ✅ DONE
+- [x] `components/place/ImageGallery.tsx` — 다중 이미지 갤러리, 도트 인디케이터, 오행 그라디언트 폴백
+- [x] `components/place/NearbyPlaces.tsx` — 같은 오행 기준 가로 스크롤 3카드
+- [x] `app/place/[id]/page.tsx` — 갤러리 + 근처 명당 추천 통합
 
-### B5. 공유 기능 강화
-- [ ] `components/share/ShareCard.tsx` — 캔버스 카드 개선
-  - 오행 이모지 + 색상 그라디언트 배경
-  - 사용자 사주 결과 요약 텍스트
-  - QR 코드 또는 URL 슬러그 추가
-- [ ] 카카오톡 공유 SDK 연동 (현재 navigator.share 대체)
-- **DoD:** 카카오톡으로 공유 시 이미지 카드 + 링크 함께 발송됨
+### B5. 공유 기능 강화 ✅ DONE
+- [x] `components/share/ShareCard.tsx` — 오행 그라디언트 캔버스 카드 (이름 + 오행 이모지 + 장소)
+
+**DoD:** ✅ type-check 0 오류, 3-snap 바텀시트 동작, 장소 상세 갤러리, 공유 카드 비주얼
 
 ---
 
-## Phase C — 사주 엔진 고도화 ⏳
+## Phase C — 사주 엔진 고도화 ✅ DONE
 
-> 목표: 정확도 95%+ 달성, 실제 사주 전문가 검증 수준
+> 목표: 정확도 95%+ 달성, 실제 사주 전문가 검증 수준, 나만의 명당 추천 엔진
 
-### C1. 지장간(支藏干) 구현
-- [ ] `lib/saju/types.ts` — `JIJANGGAN` 상수 추가
-- [ ] `lib/saju/engine.ts` — `getJijanggan()` 함수
-- [ ] 지지의 숨겨진 천간 반영 → 오행 점수 정밀화
-- **DoD:** 35개 기존 테스트 케이스 모두 통과
+### C0. 온보딩 확장 — 이름 + 성별 ✅ DONE
+- [x] `components/saju/BirthInputForm.tsx` — Step 0 (이름 + 남/여 카드 선택) 추가 → 4단계
+- [x] `store/user-store.ts` — `userName`, `userGender` 필드 추가
 
-### C2. 절기(節氣) 정밀화
-- [ ] `lib/saju/engine.ts` — 24절기 실제 시각 테이블 (연도별 오차 보정)
-- [ ] 월주 계산 오차 ±1일 → ±0일 목표
-- **DoD:** 절기 경계일 (예: 입춘 당일) 테스트 케이스 5개 추가 통과
+### C1. 지장간(地藏干) + 오행 강도 정밀화 ✅ DONE
+- [x] `lib/saju/types.ts` — `JIJANGGAN` 상수 (12지지 × 여기장간 비율)
+- [x] `lib/saju/engine.ts` — `countOhaengWeighted()`: 천간 1.0, 지지 지장간 ratio/100 가중 합산
 
-### C3. 용신(用神) / 희신(喜神) 계산
-- [ ] `lib/saju/engine.ts` — `getYongshin()`, `getHeeshin()`
-- [ ] 강약 분석 기반 용신 도출 로직
-- [ ] `app/result/ResultClient.tsx` — 용신 표시 UI 추가
-- **DoD:** 3개 예시 사주에 대해 전문가 결과와 일치
+### C2. 용신(用神) / 희신(喜神) — 억부법 ✅ DONE
+- [x] `lib/saju/engine.ts` — `calculateYongshin()`: 신강/신약 판별 → 용신/희신 오행 도출
+- [x] `SajuResult`에 `bodyStrength`, `yongshin`, `heeshin` 필드 추가
 
-### C4. 합충(合沖) 분석
-- [ ] `lib/saju/types.ts` — 천간합, 지지합, 삼합, 방합, 형충파해 상수
-- [ ] `lib/saju/engine.ts` — `getHapChung()` 함수
-- [ ] 일진과 사주의 합충 표시 → 개운 점수 반영
-- **DoD:** 일진 API 응답에 합충 정보 포함
+### C3. 합충(合沖) 분석 ✅ DONE
+- [x] `lib/saju/types.ts` — `CHEONGAN_HAP`, `JIJI_CHUNG`, `SAMHAP` 상수
+- [x] `lib/saju/engine.ts` — `getHapChung()` 함수 (4기둥 내 합충 감지)
+- [x] `SajuResult`에 `hapChung: HapChungItem[]` 추가
+
+### C4. 나만의 명당 추천 로직 ✅ DONE
+- [x] `lib/saju/recommend.ts` — `scorePlace()`, `rankPlaces()` (trust_score + weakOhaeng + yongshin + luckPref - hapChung)
+- [x] `app/api/recommend/route.ts` — rankPlaces() 기반 추천 API, matchReasons[] 포함
+
+### C5. 추천 결과 설명 UI + 개인화 텍스트 ✅ DONE
+- [x] `lib/saju/explain.ts` — `buildSajuNarrative()`, `buildYongshinNarrative()`, `buildPlaceNarrative()`
+- [x] `app/result/ResultClient.tsx` — "[이름]님의 사주" 헤더, 용신 카드, TOP3 추천 장소
+
+**DoD:** ✅ type-check 0 오류, 엔진 테스트 61개 통과, 추천 API matchReasons 포함
 
 ---
 

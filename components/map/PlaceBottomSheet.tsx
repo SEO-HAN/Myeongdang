@@ -128,6 +128,8 @@ export default function PlaceBottomSheet() {
 
   // 3단계 스냅 상태
   const [snap, setSnap] = useState<SnapLevel>('full')
+  // 링크 복사 피드백 상태
+  const [copied, setCopied] = useState(false)
 
   // isOpen이 true로 변경될 때 full로 초기화
   useEffect(() => {
@@ -187,7 +189,8 @@ export default function PlaceBottomSheet() {
     } else {
       // 폴백: 클립보드 복사
       navigator.clipboard.writeText(shareUrl).then(() => {
-        alert('링크가 복사됐습니다!')
+        setCopied(true)
+        setTimeout(() => setCopied(false), 2000)
       })
     }
   }, [place])
@@ -394,8 +397,8 @@ export default function PlaceBottomSheet() {
                     className={cn(
                       'flex items-center justify-center gap-1.5 py-3.5 rounded-xl text-sm font-medium transition-colors',
                       isBookmarked(place.id)
-                        ? 'bg-brand text-white'
-                        : 'bg-brand text-white hover:bg-brand/90',
+                        ? 'bg-amber-500 text-white'
+                        : 'bg-brand text-white',
                     )}
                   >
                     {isBookmarked(place.id) ? '🔖 저장됨' : '🔖 북마크 저장'}
@@ -407,8 +410,9 @@ export default function PlaceBottomSheet() {
                   onClick={handleShare}
                   className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
                 >
-                  <span className="text-base">💬</span>
-                  카카오톡으로 공유하기
+                  {copied ? '✓ 링크가 복사됐어요' : (
+                    <><span className="text-base">💬</span>카카오톡으로 공유하기</>
+                  )}
                 </button>
               </div>
             </div>

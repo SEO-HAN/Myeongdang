@@ -76,14 +76,33 @@ function MapPinIcon() {
   )
 }
 
+// 오행 분석 섹션 헤더용 별 아이콘
+function StarIcon() {
+  return (
+    <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+    </svg>
+  )
+}
+
+// 점수에 따른 감성 레이블 반환
+function getScoreLabel(score: number): string {
+  if (score >= 90) return '완벽한 궁합!'
+  if (score >= 80) return '최고의 선택'
+  if (score >= 70) return '강력 추천'
+  if (score >= 60) return '잘 맞아요'
+  return '괜찮은 선택'
+}
+
 export default function ResultClient({ result, luckPreference: luckProp }: ResultClientProps) {
   const router          = useRouter()
   const setSaju         = useUserStore((s) => s.setSaju)
   const userName        = useUserStore((s) => s.userName)
   const luckStored      = useUserStore((s) => s.luckPreference)
   const luckPreference  = luckProp ?? luckStored ?? undefined
-  const [copied, setCopied]     = useState(false)
-  const [topPlaces, setTopPlaces] = useState<ScoredPlace[]>([])
+  const [copied, setCopied]         = useState(false)
+  const [topPlaces, setTopPlaces]   = useState<ScoredPlace[]>([])
+  const [isLoadingPlaces, setIsLoadingPlaces] = useState(true)
 
   const narrative         = buildSajuNarrative(result, userName ?? undefined)
   const yongshinNarrative = buildYongshinNarrative(result, userName ?? undefined)
@@ -103,6 +122,7 @@ export default function ResultClient({ result, luckPreference: luckProp }: Resul
         if (data.recommendations) setTopPlaces(data.recommendations.slice(0, 3))
       })
       .catch(() => {}) // 추천 실패해도 페이지 동작
+      .finally(() => setIsLoadingPlaces(false))
   }, [result.input, luckPreference])
 
   const handleCopyLink = useCallback(() => {
@@ -198,14 +218,45 @@ export default function ResultClient({ result, luckPreference: luckProp }: Resul
       >
 
         {/* 나만의 명당 TOP3 — 풀폭 카드 */}
-        {topPlaces.length > 0 && (
+        {isLoadingPlaces ? (
+          /* 스켈레톤 로딩 UI */
+          <div className="mb-5">
+            <div className="flex items-center gap-1.5 mb-3">
+              <span style={{ color: '#C9973A' }}><MapPinIcon /></span>
+              <p className="section-label">나만의 명당 TOP 3</p>
+            </div>
+            <div className="flex flex-col gap-4">
+              {[0, 1, 2].map((i) => (
+                <div key={i} className="rounded-2xl overflow-hidden animate-pulse">
+                  <div className="h-16 bg-gray-200" />
+                  <div className="bg-white px-4 py-4 space-y-2">
+                    <div className="h-3 bg-gray-100 rounded w-1/2" />
+                    <div className="h-8 bg-gray-100 rounded-full" />
+                    <div className="h-12 bg-gray-100 rounded" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : topPlaces.length > 0 ? (
           <div className="mb-5">
             <div className="flex items-center gap-1.5 mb-3">
               <span style={{ color: '#C9973A' }}><MapPinIcon /></span>
               <p className="section-label">나만의 명당 TOP {topPlaces.length}</p>
             </div>
+
+            {/* 지도에서 보기 CTA */}
+            <a
+              href="/"
+              className="flex items-center justify-center gap-2 w-full py-3 rounded-2xl text-sm font-semibold mb-4 transition-all"
+              style={{ background: 'linear-gradient(135deg, #1A1824 0%, #2D2840 100%)', color: '#F0EAD8' }}
+            >
+              <MapPinIcon />
+              지도에서 내 명당 보기
+            </a>
+
             <div className="flex flex-col gap-4">
-              {topPlaces.map(({ place, score }, i) => {
+              {topPlaces.map(({ place, score, matchReasons }, i) => {
                 const ohaeng = (place.ohaeng[0] ?? '목') as Ohaeng
                 const color = OHAENG_COLOR[ohaeng]
                 const detailedNarrative = buildDetailedPlaceNarrative(
@@ -265,9 +316,15 @@ export default function ResultClient({ result, luckPreference: luckProp }: Resul
                           <span className="text-xs font-semibold" style={{ color: '#6E6A7A' }}>
                             당신과의 궁합
                           </span>
-                          <span className="text-sm font-bold" style={{ color: color.hex }}>
-                            {score}%
-                          </span>
+                          {/* 점수 + 감성 레이블 */}
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-sm font-bold" style={{ color: color.hex }}>
+                              {score}%
+                            </span>
+                            <span className="text-xs font-medium" style={{ color: color.hex, opacity: 0.8 }}>
+                              {getScoreLabel(score)}
+                            </span>
+                          </div>
                         </div>
                         <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
                           <motion.div
@@ -279,6 +336,20 @@ export default function ResultClient({ result, luckPreference: luckProp }: Resul
                           />
                         </div>
                       </div>
+
+                      {/* 매칭 이유 태그 */}
+                      {matchReasons.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mb-3">
+                          {matchReasons.slice(0, 2).map((reason, ri) => (
+                            <span
+                              key={ri}
+                              className="text-[10px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-600"
+                            >
+                              {reason}
+                            </span>
+                          ))}
+                        </div>
+                      )}
 
                       {/* 개인화 추천 이유 */}
                       <p className="text-sm leading-relaxed mb-3" style={{ color: '#444' }}>
@@ -312,14 +383,14 @@ export default function ResultClient({ result, luckPreference: luckProp }: Resul
               })}
             </div>
           </div>
-        )}
+        ) : null}
 
         <div className="section-divider" />
 
         {/* 오행 분석 카드 — 접기/펼치기 모드 */}
         <div className="mb-4">
           <div className="flex items-center gap-1.5 mb-3">
-            <span style={{ color: '#C9973A' }}><MapPinIcon /></span>
+            <span style={{ color: '#C9973A' }}><StarIcon /></span>
             <p className="section-label">오행 분석</p>
           </div>
           <OhaengResultCard result={result} onShare={handleCopyLink} collapsible />

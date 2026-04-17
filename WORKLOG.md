@@ -8,7 +8,7 @@
 **Phase D — 배포 파이프라인 + G단계 기능**
 
 실행 전 확인사항:
-1. `npm run dev` → localhost:3000 정상 확인 (dev server restart 필요 — stale .next 캐시)
+1. `npm run dev` → localhost:3000 정상 확인
 2. MASTERPLAN.md D1~D5 체크리스트 참조
 
 우선순위 순서 (택 1로 시작):
@@ -20,6 +20,52 @@
 ---
 
 ## 세션 로그
+
+---
+
+### 2026-04-17 | UX/UI 대규모 개선 — 실리콘밸리 실무자 수준 (병렬 에이전트 3개 동시 실행)
+
+**실행 전략:** 실리콘밸리 PM/Designer 관점 전수 분석 → 3개 독립 에이전트 병렬 dispatch → type-check 통합 검증
+
+**완료한 작업 — Agent 1: 버그 수정**
+
+- `app/onboarding/page.tsx` — `alert()` 제거 → `isError` 상태 + 인라인 에러 메시지
+  - 에러 발생 시 폼 하단에 붉은 카드로 에러 표시
+  - 재시도 시 자동 에러 상태 리셋
+
+- `components/map/PlaceBottomSheet.tsx` — 버그 2개 수정
+  - `alert('링크가 복사됐습니다!')` 제거 → `copied` state로 버튼 텍스트 2초 전환
+  - 북마크 버튼 시각적 구분: 저장됨=`bg-amber-500`(골드) / 기본=`bg-brand`(레드)
+
+**완료한 작업 — Agent 2: 결과 페이지 UX 개선**
+
+- `app/result/ResultClient.tsx` — 5가지 핵심 UX 개선
+  - TOP3 스켈레톤 로딩: `isLoadingPlaces` 상태 + `animate-pulse` 3개 카드 (jarring 제거)
+  - 점수 감성 레이블: `getScoreLabel()` 함수 추가 (90%=완벽한 궁합!, 80%=최고의 선택, ...)
+  - "지도에서 내 명당 보기" CTA: TOP3 섹션 상단, 다크 인디고 그라디언트 버튼
+  - 오행 분석 섹션 아이콘 교체: `MapPinIcon` → `StarIcon` (의미적 일관성)
+  - matchReasons 태그 표시: 최대 2개 태그로 추천 이유 시각화
+
+**완료한 작업 — Agent 3: 홈/배너 UX 검증**
+
+- `components/map/PersonalizationBanner.tsx` — 이미 Phase B에서 개선 완료 확인
+  - 비로그인 배너: 다크 배경 + `📍 오늘 당신에게 맞는 명당은?` + `시작하기` CTA
+  - 개인화 배너: 약한 오행 컬러 + ON/OFF 토글 + 사용자 이름 표시
+
+**품질 게이트:**
+- ✅ `npm run type-check` — 0 오류
+- ✅ localhost:3001 (포트 충돌로 3001) → 200 OK
+- ✅ /onboarding → 200, /result → 200, /place/mock-001 → 200
+
+**핵심 UX 플로우 개선 결과:**
+- 온보딩 → 결과 → 지도 navigation loop 완성
+- alert() → 모두 인라인 UI 피드백으로 교체
+- TOP3 추천이 스켈레톤 → 실제 카드로 부드럽게 전환
+- 추천 점수가 "87%" → "87% 강력 추천"으로 감성화
+
+**결정 사항:**
+- "지도에서 보기" 버튼: `href="/"` 단순 링크 (Zustand persist로 개인화 필터 자동 유지)
+- alert() 완전 제거 완료 — 인라인 패턴 표준화
 
 ---
 

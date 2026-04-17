@@ -17,9 +17,11 @@ export default function OnboardingPage() {
   const router  = useRouter()
   const setSaju = useUserStore((s) => s.setSaju)
   const [isLoading, setLoading] = useState(false)
+  const [isError, setError] = useState(false)
 
   const handleBirthSubmit = useCallback(async (data: BirthFormData) => {
     setLoading(true)
+    setError(false)
     try {
       const res = await fetch('/api/saju', {
         method: 'POST',
@@ -49,7 +51,7 @@ export default function OnboardingPage() {
       router.push(`/result?${params.toString()}`)
     } catch (err) {
       console.error('[온보딩] 사주 계산 오류:', err)
-      alert('분석 중 오류가 발생했습니다. 다시 시도해주세요.')
+      setError(true)
     } finally {
       setLoading(false)
     }
@@ -114,6 +116,11 @@ export default function OnboardingPage() {
         }}
       >
         <BirthInputForm onSubmit={handleBirthSubmit} isLoading={isLoading} />
+        {isError && (
+          <div className="mt-3 px-4 py-3 rounded-xl text-sm text-red-700 bg-red-50 border border-red-100">
+            분석 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.
+          </div>
+        )}
       </div>
     </div>
   )

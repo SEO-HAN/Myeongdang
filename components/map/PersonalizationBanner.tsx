@@ -39,10 +39,12 @@ export default function PersonalizationBanner() {
   const togglePersonal    = useUserStore((s) => s.togglePersonalizedMode)
   const isPersonalized    = useUserStore((s) => s.isPersonalizedMode)
 
-  // ── 프로필 완성: 부족 오행 + 개인화 토글 ──────────────────
+  // ── 프로필 완성: 감성적 메시지 + 개인화 토글 ──────────────
   if (isProfileComplete && weakOhaeng.length > 0) {
     const primaryWeak = weakOhaeng[0] as Ohaeng
     const color = OHAENG_COLOR[primaryWeak]
+    // 부족 오행 이모지+이름 텍스트 (예: "🌿목")
+    const weakLabel = weakOhaeng.map(o => `${OHAENG_EMOJI[o as Ohaeng]}${o}`).join(' ')
 
     return (
       <div className="absolute bottom-0 left-0 right-0 z-10 px-4 pb-safe pb-4">
@@ -51,7 +53,7 @@ export default function PersonalizationBanner() {
           className="w-full flex items-center justify-between px-4 py-3.5 rounded-lg cursor-pointer transition-all duration-200"
           style={isPersonalized
             ? {
-                backgroundColor: color.bg,
+                background: `linear-gradient(135deg, ${color.bg} 0%, ${color.bg}CC 100%)`,
                 border: `1.5px solid ${color.hex}50`,
                 boxShadow: '0 4px 24px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.04)',
               }
@@ -70,7 +72,7 @@ export default function PersonalizationBanner() {
                 style={{ color: isPersonalized ? color.text : '#1A1824' }}
               >
                 {isPersonalized
-                  ? `${weakOhaeng.map(o => `${OHAENG_EMOJI[o as Ohaeng]} ${o}`).join(' ')} 기운 맞춤 중`
+                  ? `당신의 부족한 ${weakLabel} 기운을 채워줄 명당을 찾았어요`
                   : '내 사주 맞춤 명당 보기'}
               </p>
               <p
@@ -79,7 +81,7 @@ export default function PersonalizationBanner() {
               >
                 {isPersonalized
                   ? '탭해서 전체 명당 보기'
-                  : `부족 오행 · ${weakOhaeng.map(o => `${OHAENG_EMOJI[o as Ohaeng]}${o}`).join(' ')}`}
+                  : `부족 오행 · ${weakLabel}`}
               </p>
             </div>
           </div>
@@ -116,7 +118,7 @@ export default function PersonalizationBanner() {
               className="text-sm font-bold text-white leading-tight"
               style={{ fontFamily: 'Noto Sans KR, sans-serif' }}
             >
-              내 사주로 맞춤 명당 찾기
+              3분이면 나만의 명당을 찾을 수 있어요
             </p>
             <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.70)' }}>
               생년월일 입력 → 오행 분석 → 추천 명당

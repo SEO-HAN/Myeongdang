@@ -5,6 +5,7 @@
 
 import type { SajuResult, Ohaeng } from './types'
 import { buildPlaceNarrative } from './explain'
+import { getTodayIlshin } from './ilshin'
 import type { PlaceRow } from '@/types/database'
 
 export interface ScoredPlace {
@@ -78,4 +79,29 @@ export function rankPlaces(
   return places
     .map((p) => scorePlace(p, result, luckPreference))
     .sort((a, b) => b.score - a.score)
+}
+
+/**
+ * 오늘의 추천 명당 — 일진 + 사주 기반 1곳
+ * 일진 오행이 장소 오행에 포함되면 bonus +15점
+ */
+export function getDailyRecommendation(
+  places: PlaceRow[],
+  result: SajuResult,
+  luckPreference?: string,
+): ScoredPlace | null {
+  const ilshin = getTodayIlshin()
+  const todayOhaeng = ilshin.dayPillar.cheonganOhaeng // 오늘 천간의 오행
+
+  const scored = places.map((p) => {
+    const base = scorePlace(p, result, luckPreference)
+    // 오늘 일진 오행과 장소 오행이 일치하면 보너스
+    if (todayOhaeng && p.ohaeng.includes(todayOhaeng)) {
+      return { ...base, score: Math.min(100, base.score + 15) }
+    }
+    return base
+  })
+
+  scored.sort((a, b) => b.score - a.score)
+  return scored[0] ?? null
 }

@@ -19,6 +19,7 @@ import {
   useUserStore,
 } from '@/store/user-store'
 import { OHAENG_EMOJI, OHAENG_COLOR } from '@/lib/saju/types'
+import { scorePlace } from '@/lib/saju/recommend'
 import { cn, getOhaengHanja, SNS_EMOJI } from '@/lib/utils'
 import type { Ohaeng } from '@/lib/saju/types'
 
@@ -122,6 +123,8 @@ export default function PlaceBottomSheet() {
   const closePlace   = useUserStore((s) => s.closePlace)
   const toggleBookmark = useUserStore((s) => s.toggleBookmark)
   const isBookmarked   = useUserStore((s) => s.isBookmarked)
+  const profile        = useUserStore((s) => s.profile)
+  const luckPreference = useUserStore((s) => s.luckPreference)
 
   // 3단계 스냅 상태
   const [snap, setSnap] = useState<SnapLevel>('full')
@@ -300,11 +303,28 @@ export default function PlaceBottomSheet() {
                   📍 {place.address}
                 </p>
 
-                {/* 오행 + 운 칩 */}
+                {/* 오행 + 운 칩 + 궁합 뱃지 */}
                 <div className="flex flex-wrap gap-1.5 mb-3">
                   {place.ohaeng.map((o) => (
                     <OhaengChip key={o} ohaeng={o as Ohaeng} />
                   ))}
+                  {/* 사주 프로필이 있으면 궁합 점수 뱃지 표시 */}
+                  {profile && (() => {
+                    const scored = scorePlace(place, profile.result, luckPreference ?? undefined)
+                    const primaryOhaeng = (place.ohaeng[0] ?? '토') as Ohaeng
+                    const oColor = OHAENG_COLOR[primaryOhaeng]
+                    return (
+                      <span
+                        className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold"
+                        style={{
+                          backgroundColor: `${oColor.hex}33`,
+                          color: oColor.text,
+                        }}
+                      >
+                        궁합 {scored.score}%
+                      </span>
+                    )
+                  })()}
                   {place.luck_types.slice(0, 3).map((luck) => (
                     <span
                       key={luck}

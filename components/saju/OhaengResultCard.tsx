@@ -10,7 +10,8 @@
  */
 'use client'
 
-import { motion } from 'framer-motion'
+import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
 import OhaengRadarChart from './OhaengRadarChart'
 import { OHAENG_EMOJI, OHAENG_COLOR } from '@/lib/saju/types'
@@ -21,6 +22,8 @@ interface OhaengResultCardProps {
   result: SajuResult
   onShare?: () => void
   compact?: boolean
+  /** 접기/펼치기 모드 — true일 때 기본 접힌 상태 */
+  collapsible?: boolean
 }
 
 // 오행 강도 바
@@ -49,8 +52,9 @@ function OhaengBar({ ohaeng, strength, isWeak, isStrong }: {
   )
 }
 
-export default function OhaengResultCard({ result, onShare, compact = false }: OhaengResultCardProps) {
+export default function OhaengResultCard({ result, onShare, compact = false, collapsible = false }: OhaengResultCardProps) {
   const { pillars, ohaengStrength, weakOhaeng, strongOhaeng, summary, inputChunWarning } = result
+  const [isExpanded, setIsExpanded] = useState(!collapsible)
 
   const pillarsArr = [
     { label: '년주 年柱', pillar: pillars.year },
@@ -75,61 +79,7 @@ export default function OhaengResultCard({ result, onShare, compact = false }: O
         </div>
       )}
 
-      {/* 4기둥 표 */}
-      {!compact && (
-        <div className="mb-5 bg-gray-50 rounded-2xl p-4">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">사주팔자 四柱八字</p>
-          <div className="grid grid-cols-4 gap-1.5">
-            {pillarsArr.map(({ label, pillar }) => (
-              <div key={label} className="flex flex-col items-center">
-                <span className="text-[9px] text-gray-400 mb-1.5">{label}</span>
-                {pillar ? (
-                  <>
-                    <div
-                      className="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold text-white mb-1"
-                      style={{ background: OHAENG_COLOR[pillar.cheonganOhaeng].hex }}
-                    >
-                      {pillar.cheonganKr}
-                    </div>
-                    <div
-                      className="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold text-white"
-                      style={{ background: OHAENG_COLOR[pillar.jijiOhaeng].hex }}
-                    >
-                      {pillar.jijiKr}
-                    </div>
-                  </>
-                ) : (
-                  <div className="w-10 h-10 rounded-xl bg-gray-200 flex items-center justify-center col-span-2">
-                    <span className="text-[10px] text-gray-400">미입력</span>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* 레이더 차트 + 오행 강도 */}
-      <div className="flex items-center gap-4 mb-5">
-        <OhaengRadarChart
-          strength={ohaengStrength}
-          size={160}
-          showValues={false}
-        />
-        <div className="flex-1 flex flex-col gap-2">
-          {ohaengList.map((o) => (
-            <OhaengBar
-              key={o}
-              ohaeng={o}
-              strength={ohaengStrength[o]}
-              isWeak={weakOhaeng.includes(o)}
-              isStrong={strongOhaeng.includes(o)}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* 부족 오행 강조 카드 */}
+      {/* 부족 오행 강조 카드 — collapsible 모드에서는 항상 표시 */}
       <div className="bg-gradient-to-r from-brand/10 to-transparent rounded-2xl p-4 mb-4 border border-brand/20">
         <p className="text-xs font-semibold text-brand uppercase tracking-wide mb-2">
           🎯 보충이 필요한 오행
@@ -149,25 +99,106 @@ export default function OhaengResultCard({ result, onShare, compact = false }: O
           })}
         </div>
         <p className="text-xs text-gray-600 mt-2 leading-relaxed">{summary}</p>
-      </div>
 
-      {/* CTA 버튼 */}
-      <div className="flex gap-2">
-        <Link
-          href={`/?ohaeng=${weakOhaeng.join(',')}`}
-          className="flex-[2] flex items-center justify-center gap-2 py-4 rounded-2xl bg-brand text-white font-bold text-sm shadow-md hover:bg-brand/90 transition-colors"
-        >
-          🗺️ 내 명당 찾기
-        </Link>
-        {onShare && (
+        {/* collapsible 모드: 접기/펼치기 토글 버튼 */}
+        {collapsible && (
           <button
-            onClick={onShare}
-            className="flex-1 flex items-center justify-center gap-1.5 py-4 rounded-2xl border-2 border-gray-200 text-gray-700 font-semibold text-sm hover:border-gray-300 transition-colors"
+            onClick={() => setIsExpanded((prev) => !prev)}
+            className="mt-3 w-full text-center text-xs font-semibold py-2 rounded-xl transition-colors cursor-pointer"
+            style={{ color: '#6E6A7A' }}
+            aria-expanded={isExpanded}
+            aria-label={isExpanded ? '오행 분석 접기' : '오행 분석 상세 보기'}
           >
-            💬 공유
+            {isExpanded ? '상세 분석 접기 ▲' : '상세 분석 보기 ▼'}
           </button>
         )}
       </div>
+
+      {/* 상세 콘텐츠 — collapsible 모드에서는 AnimatePresence 토글 */}
+      <AnimatePresence initial={false}>
+        {isExpanded && (
+          <motion.div
+            key="ohaeng-detail"
+            initial={collapsible ? { height: 0, opacity: 0 } : false}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
+            style={{ overflow: 'hidden' }}
+          >
+            {/* 4기둥 표 */}
+            {!compact && (
+              <div className="mb-5 bg-gray-50 rounded-2xl p-4">
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">사주팔자 四柱八字</p>
+                <div className="grid grid-cols-4 gap-1.5">
+                  {pillarsArr.map(({ label, pillar }) => (
+                    <div key={label} className="flex flex-col items-center">
+                      <span className="text-[9px] text-gray-400 mb-1.5">{label}</span>
+                      {pillar ? (
+                        <>
+                          <div
+                            className="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold text-white mb-1"
+                            style={{ background: OHAENG_COLOR[pillar.cheonganOhaeng].hex }}
+                          >
+                            {pillar.cheonganKr}
+                          </div>
+                          <div
+                            className="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold text-white"
+                            style={{ background: OHAENG_COLOR[pillar.jijiOhaeng].hex }}
+                          >
+                            {pillar.jijiKr}
+                          </div>
+                        </>
+                      ) : (
+                        <div className="w-10 h-10 rounded-xl bg-gray-200 flex items-center justify-center col-span-2">
+                          <span className="text-[10px] text-gray-400">미입력</span>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 레이더 차트 + 오행 강도 */}
+            <div className="flex items-center gap-4 mb-5">
+              <OhaengRadarChart
+                strength={ohaengStrength}
+                size={160}
+                showValues={false}
+              />
+              <div className="flex-1 flex flex-col gap-2">
+                {ohaengList.map((o) => (
+                  <OhaengBar
+                    key={o}
+                    ohaeng={o}
+                    strength={ohaengStrength[o]}
+                    isWeak={weakOhaeng.includes(o)}
+                    isStrong={strongOhaeng.includes(o)}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* CTA 버튼 */}
+            <div className="flex gap-2 mb-4">
+              <Link
+                href={`/?ohaeng=${weakOhaeng.join(',')}`}
+                className="flex-[2] flex items-center justify-center gap-2 py-4 rounded-2xl bg-brand text-white font-bold text-sm shadow-md hover:bg-brand/90 transition-colors"
+              >
+                🗺️ 내 명당 찾기
+              </Link>
+              {onShare && (
+                <button
+                  onClick={onShare}
+                  className="flex-1 flex items-center justify-center gap-1.5 py-4 rounded-2xl border-2 border-gray-200 text-gray-700 font-semibold text-sm hover:border-gray-300 transition-colors"
+                >
+                  💬 공유
+                </button>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   )
 }

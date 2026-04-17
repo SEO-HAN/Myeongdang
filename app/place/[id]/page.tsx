@@ -18,6 +18,7 @@ import { MOCK_PLACES, isMockMode } from '@/lib/mock-data'
 import type { Database, PlaceRow, Ohaeng } from '@/types/database'
 import ImageGallery from '@/components/place/ImageGallery'
 import NearbyPlaces from '@/components/place/NearbyPlaces'
+import SajuCompatibility from '@/components/place/SajuCompatibility'
 
 interface PageProps {
   params: { id: string }
@@ -205,6 +206,16 @@ export default async function PlacePage({ params }: PageProps) {
 
         {/* 콘텐츠 */}
         <div className="px-4 pt-5 pb-8">
+          {/* 사주 궁합 (Client Component) */}
+          <SajuCompatibility place={{
+            id: place.id,
+            name: place.name,
+            ohaeng: place.ohaeng,
+            luck_types: place.luck_types,
+            reason_text: place.reason_text,
+            trust_score: place.trust_score,
+          }} />
+
           {/* 제목 */}
           <h1 className="text-xl font-bold text-gray-900 mb-1">{place.name}</h1>
           <p className="text-xs text-gray-500 mb-4">📍 {place.address}</p>

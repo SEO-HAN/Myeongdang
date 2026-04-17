@@ -4,7 +4,7 @@
  */
 
 import type { SajuResult, Ohaeng } from './types'
-import { OHAENG_EMOJI } from './types'
+import { OHAENG_EMOJI, OHAENG_LUCK } from './types'
 
 const OHAENG_SUPPLEMENT: Record<Ohaeng, string> = {
   목: '성장 에너지와 도전 의식',
@@ -65,4 +65,45 @@ export function buildPlaceNarrative(
     return `부족한 ${matchWeak[0]} 기운을 ${placeName}에서 보충할 수 있어요`
   }
   return `${placeName}의 기운이 당신의 사주와 조화를 이룹니다`
+}
+
+/**
+ * 장소 추천 상세 서사 텍스트 (2~3문장)
+ * 용신/약한 오행/운 선호도 매칭에 따라 개인화된 설명 생성
+ */
+export function buildDetailedPlaceNarrative(
+  place: { name: string; ohaeng: string[]; reason_text: string },
+  result: SajuResult,
+  luckPreference?: string,
+): string {
+  const matchWeak = place.ohaeng.filter((o) => result.weakOhaeng.includes(o as Ohaeng))
+  const matchYong = place.ohaeng.includes(result.yongshin)
+  const matchLuck = luckPreference
+    ? place.ohaeng.some((o) => {
+        const lucks = OHAENG_LUCK[o as Ohaeng]
+        return lucks?.includes(luckPreference)
+      })
+    : false
+
+  let narrative = ''
+
+  if (matchYong) {
+    // 용신 매칭 — 가장 강한 추천 이유
+    narrative = `이 장소의 ${OHAENG_EMOJI[result.yongshin]} ${result.yongshin} 기운은 당신에게 가장 필요한 용신 에너지입니다. ${place.name}을 방문하면 ${result.yongshin} 기운이 직접 보충되어 운의 흐름이 좋아집니다.`
+  } else if (matchWeak.length > 0) {
+    // 약한 오행 매칭
+    const weakOhaeng = matchWeak[0] as Ohaeng
+    const reasonRef = place.reason_text ? ` ${place.reason_text}.` : ''
+    narrative = `당신에게 부족한 ${OHAENG_EMOJI[weakOhaeng]} ${weakOhaeng} 기운을 ${place.name}의 자연 에너지가 채워줍니다.${reasonRef} 정기적으로 방문하면 균형이 회복됩니다.`
+  } else {
+    // 매칭 없음 — 범용 서사
+    narrative = `이 장소의 기운이 당신의 사주와 자연스러운 조화를 이루어 마음의 안정을 줍니다.`
+  }
+
+  // 운 선호도 매칭 시 추가 문장
+  if (matchLuck && luckPreference) {
+    narrative += ` 특히 당신이 원하는 ${luckPreference}에 좋은 기운이 흐르는 곳이에요.`
+  }
+
+  return narrative
 }

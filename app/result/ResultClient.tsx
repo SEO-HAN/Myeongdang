@@ -18,7 +18,7 @@ import ShareCardButton from '@/components/share/ShareCard'
 import IlshinBanner from '@/components/saju/IlshinBanner'
 import { useUserStore } from '@/store/user-store'
 import { OHAENG_EMOJI, OHAENG_COLOR } from '@/lib/saju/types'
-import { buildSajuNarrative, buildYongshinNarrative } from '@/lib/saju/explain'
+import { buildSajuNarrative, buildYongshinNarrative, buildDetailedPlaceNarrative } from '@/lib/saju/explain'
 import type { SajuResult, Ohaeng } from '@/lib/saju/types'
 import type { ScoredPlace } from '@/lib/saju/recommend'
 
@@ -197,8 +197,133 @@ export default function ResultClient({ result, luckPreference: luckProp }: Resul
         style={{ boxShadow: '0 -4px 40px rgba(0,0,0,0.20)' }}
       >
 
-        {/* 오행 분석 카드 */}
-        <OhaengResultCard result={result} onShare={handleCopyLink} />
+        {/* 나만의 명당 TOP3 — 풀폭 카드 */}
+        {topPlaces.length > 0 && (
+          <div className="mb-5">
+            <div className="flex items-center gap-1.5 mb-3">
+              <span style={{ color: '#C9973A' }}><MapPinIcon /></span>
+              <p className="section-label">나만의 명당 TOP {topPlaces.length}</p>
+            </div>
+            <div className="flex flex-col gap-4">
+              {topPlaces.map(({ place, score }, i) => {
+                const ohaeng = (place.ohaeng[0] ?? '목') as Ohaeng
+                const color = OHAENG_COLOR[ohaeng]
+                const detailedNarrative = buildDetailedPlaceNarrative(
+                  { name: place.name, ohaeng: place.ohaeng, reason_text: place.reason_text },
+                  result,
+                  luckPreference,
+                )
+                return (
+                  <motion.div
+                    key={place.id}
+                    className="rounded-2xl overflow-hidden"
+                    style={{ boxShadow: 'rgba(0,0,0,0.02) 0px 0px 0px 1px, rgba(0,0,0,0.06) 0px 4px 16px, rgba(0,0,0,0.10) 0px 8px 32px' }}
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: i * 0.1 }}
+                  >
+                    {/* 오행 그라디언트 헤더 */}
+                    <div
+                      className="px-4 py-5 flex items-center gap-3"
+                      style={{
+                        background: `linear-gradient(135deg, ${color.hex}22 0%, ${color.bg} 100%)`,
+                      }}
+                    >
+                      <span className="text-3xl">{OHAENG_EMOJI[ohaeng]}</span>
+                      <div className="flex-1 min-w-0">
+                        <p
+                          className="font-semibold text-base truncate"
+                          style={{ color: '#1A1824', fontFamily: 'Noto Serif KR, Georgia, serif' }}
+                        >
+                          {place.name}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <span
+                          className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                          style={{ background: color.hex + '22', color: color.hex }}
+                        >
+                          #{i + 1}
+                        </span>
+                        {place.ohaeng.map((o) => (
+                          <span
+                            key={o}
+                            className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
+                            style={{ background: OHAENG_COLOR[o as Ohaeng].bg, color: OHAENG_COLOR[o as Ohaeng].text }}
+                          >
+                            {o}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* 카드 본문 */}
+                    <div className="bg-white px-4 py-4">
+                      {/* 궁합 프로그레스 바 */}
+                      <div className="mb-3">
+                        <div className="flex items-center justify-between mb-1.5">
+                          <span className="text-xs font-semibold" style={{ color: '#6E6A7A' }}>
+                            당신과의 궁합
+                          </span>
+                          <span className="text-sm font-bold" style={{ color: color.hex }}>
+                            {score}%
+                          </span>
+                        </div>
+                        <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                          <motion.div
+                            className="h-full rounded-full"
+                            style={{ background: color.hex }}
+                            initial={{ width: 0 }}
+                            animate={{ width: `${score}%` }}
+                            transition={{ duration: 0.8, ease: 'easeOut', delay: 0.2 + i * 0.1 }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* 개인화 추천 이유 */}
+                      <p className="text-sm leading-relaxed mb-3" style={{ color: '#444' }}>
+                        {detailedNarrative}
+                      </p>
+
+                      {/* 하단 액션 */}
+                      <div className="flex items-center gap-2">
+                        {place.kakaomap_url && (
+                          <a
+                            href={place.kakaomap_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-semibold transition-colors"
+                            style={{ background: color.bg, color: color.text }}
+                          >
+                            <MapPinIcon /> 길찾기
+                          </a>
+                        )}
+                        <a
+                          href={`/place/${place.id}`}
+                          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-semibold border transition-colors"
+                          style={{ borderColor: 'rgba(0,0,0,0.08)', color: '#6E6A7A' }}
+                        >
+                          상세 보기
+                        </a>
+                      </div>
+                    </div>
+                  </motion.div>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        <div className="section-divider" />
+
+        {/* 오행 분석 카드 — 접기/펼치기 모드 */}
+        <div className="mb-4">
+          <div className="flex items-center gap-1.5 mb-3">
+            <span style={{ color: '#C9973A' }}><MapPinIcon /></span>
+            <p className="section-label">오행 분석</p>
+          </div>
+          <OhaengResultCard result={result} onShare={handleCopyLink} collapsible />
+        </div>
 
         {/* 용신 섹션 */}
         <div className="mb-4 p-4 rounded-2xl" style={{
@@ -223,47 +348,6 @@ export default function ResultClient({ result, luckPreference: luckProp }: Resul
             {yongshinNarrative}
           </p>
         </div>
-
-        {/* 추천 명당 TOP3 */}
-        {topPlaces.length > 0 && (
-          <>
-            <div className="section-divider" />
-            <div className="mb-5">
-              <div className="flex items-center gap-1.5 mb-3">
-                <span style={{ color: '#C9973A' }}><MapPinIcon /></span>
-                <p className="section-label">나만의 명당 TOP {topPlaces.length}</p>
-              </div>
-              <div className="flex flex-col gap-2.5">
-                {topPlaces.map(({ place, score, matchReasons }, i) => {
-                  const ohaeng = (place.ohaeng[0] ?? '목') as Ohaeng
-                  const color = OHAENG_COLOR[ohaeng]
-                  return (
-                    <a key={place.id} href={`/place/${place.id}`}
-                      className="flex items-center gap-3 p-3.5 rounded-2xl transition-colors"
-                      style={{
-                        background: '#fff',
-                        border: '1px solid rgba(0,0,0,0.06)',
-                        boxShadow: 'rgba(0,0,0,0.02) 0px 0px 0px 1px, rgba(0,0,0,0.06) 0px 4px 16px',
-                      }}>
-                      <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0"
-                        style={{ background: color.bg }}>
-                        {OHAENG_EMOJI[ohaeng]}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-sm text-gray-900 truncate">{place.name}</p>
-                        <p className="text-xs text-gray-500 truncate mt-0.5">{matchReasons[0]}</p>
-                      </div>
-                      <div className="flex flex-col items-end shrink-0">
-                        <span className="text-xs font-bold" style={{ color: color.hex }}>{score}점</span>
-                        <span className="text-[10px] text-gray-400">#{i + 1}</span>
-                      </div>
-                    </a>
-                  )
-                })}
-              </div>
-            </div>
-          </>
-        )}
 
         <div className="section-divider" />
 

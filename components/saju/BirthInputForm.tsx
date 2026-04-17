@@ -9,7 +9,7 @@
  */
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
 
@@ -114,10 +114,35 @@ export default function BirthInputForm({ onSubmit, isLoading = false }: BirthInp
   // Step 3 상태
   const [luckPreference, setLuck] = useState<string | null>(null)
 
+  // 자동 진행 타이머 — 언마운트 시 클리어
+  const autoAdvanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  useEffect(() => () => { if (autoAdvanceTimer.current) clearTimeout(autoAdvanceTimer.current) }, [])
+
   const go = useCallback((next: number) => {
+    if (autoAdvanceTimer.current) clearTimeout(autoAdvanceTimer.current)
     setDir(next > step ? 1 : -1)
     setStep(next)
   }, [step])
+
+  // Step 1: 연도·월·일 모두 유효하면 500ms 후 다음 단계 자동 이동
+  useEffect(() => {
+    if (step !== 1) return
+    const y = Number(year), m = Number(month), d = Number(day)
+    const valid = y >= 1900 && y <= CURRENT_YEAR && m >= 1 && m <= 12 && d >= 1 && d <= 31
+    if (!valid) return
+    const timer = setTimeout(() => go(2), 600)
+    return () => clearTimeout(timer)
+  }, [step, year, month, day, go])
+
+  // Step 2: 시간 선택 후 600ms 자동 이동
+  const handleHourSelect = useCallback((value: number) => {
+    const next = value === hour ? null : value
+    setHour(next)
+    if (autoAdvanceTimer.current) clearTimeout(autoAdvanceTimer.current)
+    if (next !== null) {
+      autoAdvanceTimer.current = setTimeout(() => go(3), 600)
+    }
+  }, [hour, go])
 
   const canProceed = useCallback((): boolean => {
     if (step === 0) return name.trim().length > 0
@@ -194,8 +219,8 @@ export default function BirthInputForm({ onSubmit, isLoading = false }: BirthInp
                     명당지도에 오신 걸 환영해요
                   </p>
                   <h2
-                    className="text-2xl font-semibold text-center leading-snug"
-                    style={{ fontFamily: 'Noto Serif KR, Georgia, serif', color: '#F0EAD8' }}
+                    className="text-2xl font-semibold text-center leading-snug text-ink-dark"
+                    style={{ fontFamily: 'Noto Serif KR, Georgia, serif' }}
                   >
                     먼저 이름을 알려주세요
                   </h2>
@@ -239,8 +264,8 @@ export default function BirthInputForm({ onSubmit, isLoading = false }: BirthInp
                         onClick={() => setGender(g)}
                         className="py-4 rounded-2xl font-semibold text-base transition-all cursor-pointer"
                         style={gender === g
-                          ? { background: '#C9973A', color: '#fff', border: '2px solid #C9973A' }
-                          : { background: 'rgba(255,255,255,0.08)', color: 'rgba(240,234,216,0.7)', border: '1.5px solid rgba(255,255,255,0.12)' }
+                          ? { background: '#C9973A', color: '#fff', border: '2px solid #C9973A', boxShadow: '0 2px 8px rgba(201,151,58,0.25)' }
+                          : { background: 'rgba(0,0,0,0.04)', color: '#6E6A7A', border: '1.5px solid rgba(0,0,0,0.10)' }
                         }
                       >
                         {g === 'male' ? '👨 남성' : '👩 여성'}
@@ -254,8 +279,8 @@ export default function BirthInputForm({ onSubmit, isLoading = false }: BirthInp
                   disabled={!name.trim()}
                   className="w-full py-4 rounded-2xl font-bold text-base transition-all cursor-pointer"
                   style={{
-                    background: name.trim() ? '#D94F2A' : 'rgba(255,255,255,0.1)',
-                    color: name.trim() ? '#fff' : 'rgba(255,255,255,0.3)',
+                    background: name.trim() ? '#D94F2A' : '#E8E4DC',
+                    color: name.trim() ? '#fff' : '#A09AA8',
                     boxShadow: name.trim() ? '0px 4px 16px rgba(217,79,42,0.3)' : 'none',
                   }}
                 >
@@ -375,7 +400,7 @@ export default function BirthInputForm({ onSubmit, isLoading = false }: BirthInp
                   {HOUR_LABELS.map(({ value, label, sub }) => (
                     <button
                       key={value}
-                      onClick={() => setHour(value === hour ? null : value)}
+                      onClick={() => handleHourSelect(value)}
                       className={cn(
                         'w-full px-4 py-3 rounded-lg border text-left transition-all cursor-pointer',
                         'flex items-center justify-between',
@@ -394,7 +419,11 @@ export default function BirthInputForm({ onSubmit, isLoading = false }: BirthInp
                 </div>
 
                 <button
-                  onClick={() => { setHour(null); go(3) }}
+                  onClick={() => {
+                    if (autoAdvanceTimer.current) clearTimeout(autoAdvanceTimer.current)
+                    setHour(null)
+                    go(3)
+                  }}
                   className="w-full mt-3 text-sm text-ink-mid underline underline-offset-2 cursor-pointer"
                 >
                   시간을 잘 모르겠어요 · 건너뛰기

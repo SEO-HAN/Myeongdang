@@ -106,7 +106,7 @@ function SnsCard({ url, author, snippet, snsType }: {
           <p className="text-xs font-medium text-gray-800 truncate">{author}</p>
         )}
         {snippet && (
-          <p className="text-[11px] text-gray-500 truncate mt-0.5">"{snippet}"</p>
+          <p className="text-[11px] text-gray-500 truncate mt-0.5">&ldquo;{snippet}&rdquo;</p>
         )}
       </div>
       <span className="text-gray-300 text-sm shrink-0">↗</span>

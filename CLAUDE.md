@@ -133,6 +133,14 @@ SUPABASE_SERVICE_ROLE_KEY → 절대 클라이언트 노출 금지
 `${process.env.NEXT_PUBLIC_APP_URL}/api/og?y=${y}&m=${m}&d=${d}`
 ```
 
+### R7 — 세션 종료 전 로그 업데이트 (절대 규칙)
+```
+코드 파일(*.ts, *.tsx)을 수정한 세션에서는 반드시:
+  1. WORKLOG.md — ### YYYY-MM-DD | 제목 형식으로 작업 로그 추가
+  2. MASTERPLAN.md — 완료된 체크리스트 항목 [x] 표시
+Stop 훅이 이를 자동 검증하며, 미업데이트 시 블록됩니다.
+```
+
 ## 도메인 지식 — 사주 오행
 
 ```

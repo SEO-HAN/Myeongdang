@@ -58,7 +58,6 @@ export default function BirthInputForm({ onSubmit, isLoading = false }: BirthInp
   const [year, setYear]           = useState('')
   const [month, setMonth]         = useState<number | null>(null)
   const [day, setDay]             = useState<number | null>(null)
-  const [showMonth, setShowMonth] = useState(false)
   const [showDay, setShowDay]     = useState(false)
 
   // Step 2
@@ -78,15 +77,12 @@ export default function BirthInputForm({ onSubmit, isLoading = false }: BirthInp
   const yearValid = year !== '' && yearNum >= 1900 && yearNum <= CURRENT_YEAR
 
   // 연도 유효 → 월 그리드 등장
-  useEffect(() => {
-    if (yearValid && !showMonth) setShowMonth(true)
-  }, [yearValid, showMonth])
+  const showMonth = yearValid
 
   const handleYearChange = useCallback((val: string) => {
     setYear(val)
     setMonth(null)
     setDay(null)
-    setShowMonth(false)
     setShowDay(false)
   }, [])
 

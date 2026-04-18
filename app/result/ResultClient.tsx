@@ -105,7 +105,6 @@ export default function ResultClient({ result, luckPreference: luckProp }: Resul
   const [topPlaces, setTopPlaces]   = useState<ScoredPlace[]>([])
   const [isLoadingPlaces, setIsLoadingPlaces] = useState(true)
 
-  const narrative         = buildSajuNarrative(result, userName ?? undefined)
   const yongshinNarrative = buildYongshinNarrative(result, userName ?? undefined)
 
   useEffect(() => {

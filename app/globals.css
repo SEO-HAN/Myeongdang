@@ -25,6 +25,9 @@
     --ink-dark:  #1A1824;
     --ink-mid:   #6E6A7A;
     --ink-cream: #F0EAD8;
+
+    /* 딥 네이비 — 모던 미니멀 프라이머리 */
+    --navy: #1A1A2E;
   }
 
   /* iOS 탭 하이라이트 제거 */
@@ -89,6 +92,23 @@
     background: rgba(255, 255, 255, 0.14);
   }
   .icon-btn-dark:active {
+    transform: scale(0.95);
+  }
+
+  /* ── 헤더 아이콘 버튼 (라이트) ─────────────────────────────── */
+  .icon-btn-light {
+    @apply flex items-center justify-center rounded-full;
+    width: 44px;
+    height: 44px;
+    background: rgba(26, 26, 46, 0.06);
+    border: 1px solid rgba(26, 26, 46, 0.10);
+    color: #1A1A2E;
+    transition: background 150ms ease;
+  }
+  .icon-btn-light:hover {
+    background: rgba(26, 26, 46, 0.10);
+  }
+  .icon-btn-light:active {
     transform: scale(0.95);
   }
 

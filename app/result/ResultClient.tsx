@@ -16,6 +16,7 @@ import { motion } from 'framer-motion'
 import OhaengResultCard from '@/components/saju/OhaengResultCard'
 import ShareCardButton from '@/components/share/ShareCard'
 import IlshinBanner from '@/components/saju/IlshinBanner'
+import OhaengStrengthBar from '@/components/saju/OhaengStrengthBar'
 import { useUserStore } from '@/store/user-store'
 import { OHAENG_EMOJI, OHAENG_COLOR } from '@/lib/saju/types'
 import { buildSajuNarrative, buildYongshinNarrative, buildDetailedPlaceNarrative } from '@/lib/saju/explain'
@@ -132,88 +133,107 @@ export default function ResultClient({ result, luckPreference: luckProp }: Resul
     })
   }, [])
 
-  const primaryWeak = result.weakOhaeng[0] as Ohaeng
-  const weakColor   = OHAENG_COLOR[primaryWeak]
-
   return (
-    <div className="min-h-screen hero-dark pb-safe flex flex-col">
+    <div className="min-h-screen pb-safe flex flex-col" style={{ background: '#FAFAF8' }}>
 
       {/* ── 헤더 ──────────────────────────────────────────── */}
       <header className="flex items-center justify-between px-4 pt-safe pt-4 pb-4">
         <button
           onClick={() => router.back()}
-          className="icon-btn-dark"
+          className="icon-btn-light"
           aria-label="뒤로"
         >
           <ChevronLeftIcon />
         </button>
 
         <p
-          className="text-white font-semibold text-base"
-          style={{ fontFamily: 'Noto Serif KR, Georgia, serif' }}
+          className="font-semibold text-base"
+          style={{ color: '#1A1A2E', fontFamily: 'Noto Serif KR, Georgia, serif' }}
         >
           오행 분석 결과
         </p>
 
         <button
           onClick={handleCopyLink}
-          className="icon-btn-dark"
+          className="icon-btn-light"
           aria-label="링크 복사"
         >
           {copied ? <CheckIcon /> : <LinkIcon />}
         </button>
       </header>
 
-      {/* ── 다크 히어로 — "나는 X가 부족한 사람" ─────────── */}
+      {/* ── 라이트 히어로 — 오행 바차트 카드 ─────────── */}
       <motion.div
-        className="text-center px-6 py-6 flex-shrink-0"
+        className="px-4 py-4 flex-shrink-0"
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.45, ease: [0.25, 0.46, 0.45, 0.94] }}
       >
-        {/* 오행 이모지 — 의미있는 도메인 콘텐츠이므로 이모지 유지 */}
-        <motion.div
-          className="text-6xl mb-4 leading-none"
-          animate={{ scale: [1, 1.10, 1] }}
-          transition={{ delay: 0.35, duration: 0.5, ease: 'easeOut' }}
+        <div
+          className="rounded-2xl p-5"
+          style={{ background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}
         >
-          {OHAENG_EMOJI[primaryWeak]}
-        </motion.div>
+          {/* 이름 + 일간(日干) */}
+          <div className="flex items-start justify-between mb-4">
+            <div>
+              {userName && (
+                <p className="text-xs font-semibold mb-1" style={{ color: '#C9973A' }}>
+                  {userName}님의 사주
+                </p>
+              )}
+              <h1
+                className="text-2xl font-semibold leading-tight"
+                style={{ fontFamily: 'Noto Serif KR, Georgia, serif', color: '#1A1A2E' }}
+              >
+                {result.pillars.day.cheongan}
+                <span className="text-base font-normal ml-1.5" style={{ color: '#6E6A7A' }}>
+                  ({result.pillars.day.cheonganKr}{result.pillars.day.cheonganOhaeng})
+                </span>
+              </h1>
+            </div>
+            {/* 신강/신약 배지 */}
+            <span
+              className="text-xs font-semibold px-2.5 py-1 rounded-full mt-1"
+              style={{
+                background: result.bodyStrength === 'strong' ? '#EEF2FB' : result.bodyStrength === 'weak' ? '#FFF4F0' : '#F3F3F0',
+                color:      result.bodyStrength === 'strong' ? '#1A4CB0' : result.bodyStrength === 'weak' ? '#993C1D' : '#4A4843',
+              }}
+            >
+              {result.bodyStrength === 'strong' ? '신강(身强)' : result.bodyStrength === 'weak' ? '신약(身弱)' : '중화(中和)'}
+            </span>
+          </div>
 
-        {/* 이름 헤더 */}
-        {userName && (
-          <p className="text-sm font-medium mb-2" style={{ color: '#C9973A' }}>
-            {userName}님의 사주
-          </p>
-        )}
+          {/* 오행 강도 바 차트 */}
+          <div className="mb-4">
+            <OhaengStrengthBar strength={result.ohaengStrength} />
+          </div>
 
-        <h1
-          className="text-2xl font-semibold mb-2 leading-snug break-keep"
-          style={{
-            fontFamily: 'Noto Serif KR, Georgia, serif',
-            color: '#F0EAD8',
-          }}
-        >
-          나는{' '}
-          <span style={{ color: weakColor.hex }}>
-            {result.weakOhaeng.map((o) => `${OHAENG_EMOJI[o as Ohaeng]} ${o}`).join(', ')}
-          </span>
-          가{'\n'}부족한 사람입니다
-        </h1>
-
-        <p className="text-sm mt-2" style={{ color: 'rgba(160,152,149,0.8)' }}>
-          {result.pillars.year.cheonganKr}{result.pillars.year.jijiKr}년생
-        </p>
-
-        {/* 서사 텍스트 */}
-        <p className="text-sm mt-3 leading-relaxed px-2" style={{ color: 'rgba(240,234,216,0.75)' }}>
-          {narrative}
-        </p>
+          {/* 용신 / 희신 칩 */}
+          <div className="flex gap-2 flex-wrap">
+            <span
+              className="text-xs font-semibold px-3 py-1.5 rounded-full"
+              style={{ background: OHAENG_COLOR[result.yongshin].bg, color: OHAENG_COLOR[result.yongshin].text }}
+            >
+              용신 {OHAENG_EMOJI[result.yongshin]} {result.yongshin}
+            </span>
+            <span
+              className="text-xs font-semibold px-3 py-1.5 rounded-full"
+              style={{ background: OHAENG_COLOR[result.heeshin].bg, color: OHAENG_COLOR[result.heeshin].text }}
+            >
+              희신 {OHAENG_EMOJI[result.heeshin]} {result.heeshin}
+            </span>
+            {result.hapChung.length > 0 && (
+              <span className="text-xs font-semibold px-3 py-1.5 rounded-full" style={{ background: '#FFF4F0', color: '#993C1D' }}>
+                ⚡ {result.hapChung[0].type}
+              </span>
+            )}
+          </div>
+        </div>
       </motion.div>
 
       {/* ── 흰 카드 섹션 — 바텀시트 스타일 ──────────────── */}
       <div
-        className="flex-1 bg-parchment rounded-t-sheet px-4 pt-6 pb-8"
+        className="flex-1 rounded-t-sheet px-4 pt-6 pb-8"
         style={{ boxShadow: '0 -4px 40px rgba(0,0,0,0.20)' }}
       >
 

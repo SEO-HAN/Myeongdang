@@ -11,7 +11,7 @@
  */
 'use client'
 
-import { useEffect, useCallback } from 'react'
+import { useEffect, useCallback, useState } from 'react'
 import { AnimatePresence, motion, type PanInfo } from 'framer-motion'
 import Image from 'next/image'
 import {
@@ -19,8 +19,18 @@ import {
   useUserStore,
 } from '@/store/user-store'
 import { OHAENG_EMOJI, OHAENG_COLOR } from '@/lib/saju/types'
+import { scorePlace } from '@/lib/saju/recommend'
 import { cn, getOhaengHanja, SNS_EMOJI } from '@/lib/utils'
 import type { Ohaeng } from '@/lib/saju/types'
+
+// 3단계 스냅 높이 타입
+type SnapLevel = 'peek' | 'mini' | 'full'
+
+const SNAP_HEIGHT: Record<SnapLevel, string> = {
+  peek: '80px',
+  mini: '45vh',
+  full: '88vh',
+}
 
 // ─────────────────────────────────────────────
 // 서브 컴포넌트: 오행 칩
@@ -82,7 +92,6 @@ function SnsCard({ url, author, snippet, snsType }: {
   snippet?: string
   snsType: string
 }) {
-  const primaryOhaeng: Ohaeng = 'hwa' as never // fallback
   return (
     <a
       href={url}
@@ -98,7 +107,7 @@ function SnsCard({ url, author, snippet, snsType }: {
           <p className="text-xs font-medium text-gray-800 truncate">{author}</p>
         )}
         {snippet && (
-          <p className="text-[11px] text-gray-500 truncate mt-0.5">"{snippet}"</p>
+          <p className="text-[11px] text-gray-500 truncate mt-0.5">&ldquo;{snippet}&rdquo;</p>
         )}
       </div>
       <span className="text-gray-300 text-sm shrink-0">↗</span>
@@ -114,6 +123,18 @@ export default function PlaceBottomSheet() {
   const closePlace   = useUserStore((s) => s.closePlace)
   const toggleBookmark = useUserStore((s) => s.toggleBookmark)
   const isBookmarked   = useUserStore((s) => s.isBookmarked)
+  const profile        = useUserStore((s) => s.profile)
+  const luckPreference = useUserStore((s) => s.luckPreference)
+
+  // 3단계 스냅 상태
+  const [snap, setSnap] = useState<SnapLevel>('full')
+  // 링크 복사 피드백 상태
+  const [copied, setCopied] = useState(false)
+
+  // isOpen이 true로 변경될 때 full로 초기화
+  useEffect(() => {
+    if (isOpen) setSnap('full')
+  }, [isOpen])
 
   // ESC 키 닫기
   useEffect(() => {
@@ -124,12 +145,25 @@ export default function PlaceBottomSheet() {
     return () => window.removeEventListener('keydown', handler)
   }, [closePlace])
 
-  // 스와이프 핸들러
+  // 3단계 스냅 드래그 핸들러
   const handleDragEnd = useCallback(
     (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-      if (info.offset.y > 80 || info.velocity.y > 400) closePlace()
+      const { offset, velocity } = info
+      // 아래로 빠르게 or 크게 → 닫거나 축소
+      if (velocity.y > 500 || offset.y > 200) {
+        if (snap === 'full') setSnap('mini')
+        else if (snap === 'mini') setSnap('peek')
+        else closePlace()
+        return
+      }
+      // 위로 빠르게 or 크게 → 확장
+      if (velocity.y < -300 || offset.y < -80) {
+        if (snap === 'peek') setSnap('mini')
+        else if (snap === 'mini') setSnap('full')
+        return
+      }
     },
-    [closePlace],
+    [snap, closePlace],
   )
 
   // 카카오톡 공유
@@ -155,7 +189,8 @@ export default function PlaceBottomSheet() {
     } else {
       // 폴백: 클립보드 복사
       navigator.clipboard.writeText(shareUrl).then(() => {
-        alert('링크가 복사됐습니다!')
+        setCopied(true)
+        setTimeout(() => setCopied(false), 2000)
       })
     }
   }, [place])
@@ -175,9 +210,10 @@ export default function PlaceBottomSheet() {
 
           {/* 바텀시트 */}
           <motion.div
-            className="fixed bottom-0 left-0 right-0 z-30 bg-white rounded-t-3xl shadow-bottom max-h-[88vh] overflow-hidden flex flex-col"
+            className="fixed bottom-0 left-0 right-0 z-30 bg-white rounded-t-[32px] shadow-bottom overflow-hidden flex flex-col"
+            style={{ boxShadow: '0 -4px 40px rgba(0,0,0,0.15)' }}
             initial={{ y: '100%' }}
-            animate={{ y: 0 }}
+            animate={{ y: 0, height: SNAP_HEIGHT[snap] }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 28, stiffness: 320 }}
             drag="y"
@@ -190,8 +226,27 @@ export default function PlaceBottomSheet() {
               <div className="w-10 h-1 rounded-full bg-gray-200" />
             </div>
 
+            {/* peek/mini 모드에서만 보이는 장소명 요약 */}
+            {snap !== 'full' && (
+              <div className="px-4 py-2 flex items-center justify-between">
+                <div>
+                  <p className="font-semibold text-gray-900 text-sm">{place.name}</p>
+                  <p className="text-xs text-gray-500">{place.ohaeng.map(o => OHAENG_EMOJI[o as Ohaeng]).join(' ')} {place.address.split(' ').slice(0, 2).join(' ')}</p>
+                </div>
+                <button
+                  onClick={() => setSnap('full')}
+                  className="text-xs font-medium px-3 py-1.5 rounded-full bg-gray-100 text-gray-600"
+                >
+                  상세 보기
+                </button>
+              </div>
+            )}
+
             {/* 스크롤 영역 */}
-            <div className="overflow-y-auto overscroll-contain pb-safe pb-8">
+            <div className={cn(
+              'overflow-hidden overscroll-contain pb-safe pb-8 transition-all',
+              snap === 'full' && 'overflow-y-auto',
+            )}>
 
               {/* 이미지 영역 */}
               <div className="relative h-44 bg-gradient-to-br from-slate-700 to-slate-500 mx-0">
@@ -251,11 +306,28 @@ export default function PlaceBottomSheet() {
                   📍 {place.address}
                 </p>
 
-                {/* 오행 + 운 칩 */}
+                {/* 오행 + 운 칩 + 궁합 뱃지 */}
                 <div className="flex flex-wrap gap-1.5 mb-3">
                   {place.ohaeng.map((o) => (
                     <OhaengChip key={o} ohaeng={o as Ohaeng} />
                   ))}
+                  {/* 사주 프로필이 있으면 궁합 점수 뱃지 표시 */}
+                  {profile && (() => {
+                    const scored = scorePlace(place, profile.result, luckPreference ?? undefined)
+                    const primaryOhaeng = (place.ohaeng[0] ?? '토') as Ohaeng
+                    const oColor = OHAENG_COLOR[primaryOhaeng]
+                    return (
+                      <span
+                        className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold"
+                        style={{
+                          backgroundColor: `${oColor.hex}33`,
+                          color: oColor.text,
+                        }}
+                      >
+                        궁합 {scored.score}%
+                      </span>
+                    )
+                  })()}
                   {place.luck_types.slice(0, 3).map((luck) => (
                     <span
                       key={luck}
@@ -314,7 +386,7 @@ export default function PlaceBottomSheet() {
                     href={place.kakaomap_url || `https://map.kakao.com/link/search/${encodeURIComponent(place.name)}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-1.5 py-3 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                    className="flex items-center justify-center gap-1.5 py-3.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
                   >
                     🗺️ 카카오맵으로 보기
                   </a>
@@ -323,10 +395,10 @@ export default function PlaceBottomSheet() {
                   <button
                     onClick={() => toggleBookmark(place.id)}
                     className={cn(
-                      'flex items-center justify-center gap-1.5 py-3 rounded-xl text-sm font-medium transition-colors',
+                      'flex items-center justify-center gap-1.5 py-3.5 rounded-xl text-sm font-medium transition-colors',
                       isBookmarked(place.id)
-                        ? 'bg-brand text-white'
-                        : 'bg-brand text-white hover:bg-brand/90',
+                        ? 'bg-amber-500 text-white'
+                        : 'bg-brand text-white',
                     )}
                   >
                     {isBookmarked(place.id) ? '🔖 저장됨' : '🔖 북마크 저장'}
@@ -336,10 +408,11 @@ export default function PlaceBottomSheet() {
                 {/* 카카오톡 공유 */}
                 <button
                   onClick={handleShare}
-                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                  className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
                 >
-                  <span className="text-base">💬</span>
-                  카카오톡으로 공유하기
+                  {copied ? '✓ 링크가 복사됐어요' : (
+                    <><span className="text-base">💬</span>카카오톡으로 공유하기</>
+                  )}
                 </button>
               </div>
             </div>

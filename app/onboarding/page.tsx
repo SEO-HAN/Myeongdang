@@ -1,130 +1,111 @@
-/**
- * /onboarding — 사주 입력 페이지
- *
- * 탭 구성:
- *  - [생년월일 입력] : 정확한 사주 계산 (BirthInputForm)
- *  - [간단 테스트]   : 5문항 오행 추정 (QuickTestForm)
- *
- * Vercel best practice:
- *  - Client Component (폼 상태 관리)
- *  - useRouter().push() 로 결과 페이지 이동 (URL params에 데이터 전달)
- */
 'use client'
 
 import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { motion, AnimatePresence } from 'framer-motion'
 import BirthInputForm, { type BirthFormData } from '@/components/saju/BirthInputForm'
-import QuickTestForm from '@/components/saju/QuickTestForm'
 import { useUserStore } from '@/store/user-store'
 
-type Tab = 'birth' | 'quick'
-
 export default function OnboardingPage() {
-  const router   = useRouter()
-  const setSaju  = useUserStore((s) => s.setSaju)
-  const [tab, setTab]         = useState<Tab>('birth')
+  const router  = useRouter()
+  const setSaju = useUserStore((s) => s.setSaju)
   const [isLoading, setLoading] = useState(false)
+  const [isError, setError]     = useState(false)
 
   const handleBirthSubmit = useCallback(async (data: BirthFormData) => {
     setLoading(true)
+    setError(false)
     try {
-      // 1. 서버 API 호출 (DB 저장 + 정확한 계산)
       const res = await fetch('/api/saju', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          year:  data.year,
+          month: data.month,
+          day:   data.day,
+          hour:  data.hour,
+        }),
       })
       const json = await res.json()
-
       if (!res.ok) throw new Error(json.error)
 
-      // 2. Zustand에 결과 캐시
-      setSaju(data)
+      setSaju(
+        { year: data.year, month: data.month, day: data.day, hour: data.hour },
+        { name: data.name, gender: data.gender, luckPreference: data.luckPreference },
+      )
 
-      // 3. 결과 페이지로 이동 (URL params로 공유 가능한 URL 생성)
       const params = new URLSearchParams({
         y: String(data.year),
         m: String(data.month),
         d: String(data.day),
         ...(data.hour !== undefined && { h: String(data.hour) }),
-        ...(data.gender && { g: data.gender }),
+        ...(data.luckPreference && { luck: data.luckPreference }),
       })
       router.push(`/result?${params.toString()}`)
     } catch (err) {
-      console.error(err)
-      alert('분석 중 오류가 발생했습니다. 다시 시도해주세요.')
+      console.error('[온보딩] 사주 계산 오류:', err)
+      setError(true)
     } finally {
       setLoading(false)
     }
   }, [setSaju, router])
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 to-slate-900 flex flex-col">
+    <div className="min-h-screen flex flex-col" style={{ background: '#FAFAF8' }}>
+
       {/* 헤더 */}
-      <header className="flex items-center justify-between px-4 pt-safe pt-4 pb-4">
+      <header className="flex items-center justify-between px-4 pt-safe pt-4 pb-3">
         <button
           onClick={() => router.back()}
-          className="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 text-white text-lg"
+          className="icon-btn-light"
           aria-label="뒤로"
         >
-          ←
+          <svg viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
+            <path
+              fillRule="evenodd"
+              d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z"
+              clipRule="evenodd"
+            />
+          </svg>
         </button>
+
         <div className="text-center">
-          <p className="text-white font-bold text-base">명당지도</p>
-          <p className="text-white/50 text-xs">내 오행 분석</p>
+          <p
+            className="font-bold text-base tracking-tight"
+            style={{ fontFamily: 'Noto Serif KR, Georgia, serif', color: '#1A1A2E' }}
+          >
+            명당지도
+          </p>
+          <p className="text-xs mt-0.5" style={{ color: '#C9973A' }}>오행 분석</p>
         </div>
-        <div className="w-10" />
+
+        <div className="w-11" />
       </header>
 
       {/* 타이틀 */}
-      <div className="text-center px-6 py-6">
-        <h1 className="text-2xl font-bold text-white mb-2">
-          내 사주로<br />
-          <span className="text-brand">맞춤 명당</span>을 찾아드려요
+      <div className="text-center px-6 py-4">
+        <h1
+          className="text-xl font-semibold mb-1.5 leading-snug break-keep"
+          style={{ fontFamily: 'Noto Serif KR, Georgia, serif', color: '#1A1A2E' }}
+        >
+          내 사주로{' '}
+          <span style={{ color: '#C9973A' }}>맞춤 명당</span>을 찾아드려요
         </h1>
-        <p className="text-sm text-white/50">
-          생년월일을 입력하면 부족한 오행을 분석해<br />
-          딱 맞는 풍수 명당을 추천해드립니다
+        <p className="text-xs break-keep" style={{ color: '#6E6A7A' }}>
+          생년월일 입력 → 오행 분석 → 풍수 명당 추천
         </p>
       </div>
 
-      {/* 탭 전환 */}
-      <div className="mx-4 mb-6">
-        <div className="flex bg-white/10 rounded-2xl p-1 gap-1">
-          {([ ['birth', '🗓️ 생년월일 입력'], ['quick', '⚡ 간단 테스트'] ] as [Tab, string][]).map(([id, label]) => (
-            <button
-              key={id}
-              onClick={() => setTab(id)}
-              className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
-                tab === id
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-white/60 hover:text-white/80'
-              }`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* 탭 콘텐츠 */}
-      <div className="flex-1 bg-white rounded-t-3xl px-0 pt-8 pb-safe overflow-y-auto">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={tab}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -12 }}
-            transition={{ duration: 0.22 }}
-          >
-            {tab === 'birth' ? (
-              <BirthInputForm onSubmit={handleBirthSubmit} isLoading={isLoading} />
-            ) : (
-              <QuickTestForm />
-            )}
-          </motion.div>
-        </AnimatePresence>
+      {/* 폼 카드 */}
+      <div
+        className="flex-1 bg-white rounded-t-3xl pt-6 pb-safe overflow-y-auto"
+        style={{ boxShadow: '0 -2px 20px rgba(0,0,0,0.05)' }}
+      >
+        <BirthInputForm onSubmit={handleBirthSubmit} isLoading={isLoading} />
+        {isError && (
+          <div className="mt-3 mx-4 px-4 py-3 rounded-xl text-sm text-red-700 bg-red-50 border border-red-100">
+            분석 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.
+          </div>
+        )}
       </div>
     </div>
   )

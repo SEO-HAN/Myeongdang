@@ -37,10 +37,7 @@ export async function POST(req: NextRequest) {
   // ── DB 저장 (로그인 세션이 있을 때만) ──
   try {
     const cookieStore = cookies()
-    // user_profiles는 JSONB 컬럼(ohaeng_analysis) 때문에 supabase-js v2 generic 우회
-    // 실제 타입 안전성은 UserProfileRow로 유지
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const supabase = createServerClient<any>(
+    const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       { cookies: { get: (name: string) => cookieStore.get(name)?.value } },

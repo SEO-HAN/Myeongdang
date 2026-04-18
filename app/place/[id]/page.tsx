@@ -11,12 +11,14 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { cookies } from 'next/headers'
 import { createServerClient } from '@supabase/ssr'
-import Image from 'next/image'
 import Link from 'next/link'
 import { OHAENG_EMOJI, OHAENG_COLOR } from '@/lib/saju/types'
 import { getTrustLabel } from '@/lib/utils'
 import { MOCK_PLACES, isMockMode } from '@/lib/mock-data'
 import type { Database, PlaceRow, Ohaeng } from '@/types/database'
+import ImageGallery from '@/components/place/ImageGallery'
+import NearbyPlaces from '@/components/place/NearbyPlaces'
+import SajuCompatibility from '@/components/place/SajuCompatibility'
 
 interface PageProps {
   params: { id: string }
@@ -43,6 +45,26 @@ async function getPlace(id: string): Promise<PlaceRow | null> {
     if (error) return null
     return data
   } catch { return null }
+}
+
+async function getNearbyPlaces(ohaeng: string): Promise<PlaceRow[]> {
+  if (isMockMode()) {
+    return MOCK_PLACES.filter((p) => (p.ohaeng as string[]).includes(ohaeng)).slice(0, 4)
+  }
+  try {
+    const cookieStore = cookies()
+    const supabase = createServerClient<Database>(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      { cookies: { get: (name: string) => cookieStore.get(name)?.value } },
+    )
+    const { data } = await supabase
+      .from('places')
+      .select('id, name, ohaeng, trust_score, image_urls, address, lat, lng, luck_types, description_short, reason_text, source_sns, kakaomap_url, expert_verified')
+      .contains('ohaeng', [ohaeng as Ohaeng])
+      .limit(4)
+    return data ?? []
+  } catch { return [] }
 }
 
 // ─────────────────────────────────────────────
@@ -132,38 +154,36 @@ export default async function PlacePage({ params }: PageProps) {
 
   const primaryOhaeng = place.ohaeng[0] as Ohaeng
   const ohaengColor   = OHAENG_COLOR[primaryOhaeng]
+  const nearbyPlaces  = await getNearbyPlaces(place.ohaeng[0])
 
   return (
     <>
       <JsonLd place={place} />
 
       <div className="min-h-screen bg-white max-w-lg mx-auto">
-        {/* 헤더 이미지 */}
-        <div className="relative h-56 bg-gradient-to-br from-slate-700 to-slate-500">
-          {place.image_urls[0] && (
-            <Image
-              src={place.image_urls[0]}
-              alt={place.name}
-              fill
-              className="object-cover"
-              sizes="(max-width: 512px) 100vw, 512px"
-              priority
-            />
-          )}
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/60" />
+        {/* 이미지 갤러리 (Client Component) */}
+        <div className="relative">
+          <ImageGallery
+            imageUrls={place.image_urls}
+            altText={place.name}
+            ohaengHex={ohaengColor.hex}
+          />
 
           {/* 뒤로 버튼 */}
-          <div className="absolute top-4 left-4 flex gap-2">
+          <div className="absolute top-4 left-4 z-10">
             <Link
               href="/"
-              className="w-9 h-9 rounded-full bg-black/40 backdrop-blur-sm text-white flex items-center justify-center"
+              className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-sm text-white flex items-center justify-center"
+              aria-label="뒤로"
             >
-              ←
+              <svg viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
+                <path fillRule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clipRule="evenodd" />
+              </svg>
             </Link>
           </div>
 
           {/* 오행 뱃지 */}
-          <div className="absolute bottom-4 left-4 flex gap-2">
+          <div className="absolute bottom-4 left-4 z-10 flex gap-2">
             {place.ohaeng.map((o) => {
               const hex = OHAENG_COLOR[o as Ohaeng]?.hex ?? '#888'
               return (
@@ -186,6 +206,16 @@ export default async function PlacePage({ params }: PageProps) {
 
         {/* 콘텐츠 */}
         <div className="px-4 pt-5 pb-8">
+          {/* 사주 궁합 (Client Component) */}
+          <SajuCompatibility place={{
+            id: place.id,
+            name: place.name,
+            ohaeng: place.ohaeng,
+            luck_types: place.luck_types,
+            reason_text: place.reason_text,
+            trust_score: place.trust_score,
+          }} />
+
           {/* 제목 */}
           <h1 className="text-xl font-bold text-gray-900 mb-1">{place.name}</h1>
           <p className="text-xs text-gray-500 mb-4">📍 {place.address}</p>
@@ -249,6 +279,9 @@ export default async function PlacePage({ params }: PageProps) {
               ✨ 내 사주에 맞는 명당 더 찾기
             </Link>
           </div>
+
+          {/* 근처 명당 추천 */}
+          <NearbyPlaces places={nearbyPlaces} currentId={params.id} />
         </div>
       </div>
     </>

@@ -50,7 +50,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false, // 지도 UX를 위해 확대 비활성화
-  themeColor: '#E8593C',
+  themeColor: '#0D0D1A', // 다크 캔버스 — 상태바 어두운 톤 통일
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

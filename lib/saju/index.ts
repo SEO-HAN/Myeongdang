@@ -49,3 +49,9 @@ export type {
 // 일진(日辰) + 개운(開運) 엔진
 export { getIlshin, getTodayIlshin, getIlshinByDateString } from './ilshin';
 export type { IlshinResult, GeunGrade } from './ilshin';
+
+// 개인화 서사 텍스트 유틸
+export { buildSajuNarrative, buildYongshinNarrative, buildPlaceNarrative } from './explain';
+
+// 추가 타입 내보내기
+export type { HapChungItem } from './types';

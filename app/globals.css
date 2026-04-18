@@ -2,38 +2,169 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Google Fonts: Noto Serif KR + Noto Sans KR ── */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&family=Noto+Serif+KR:wght@400;500;600;700&display=swap');
+
 @layer base {
   :root {
-    --color-brand:   #E8593C;
-    --color-mok:     #3B6D11;
-    --color-hwa:     #E8593C;
-    --color-to:      #BA7517;
-    --color-geum:    #888780;
+    /* 오행 컬러 변수 (DESIGN.md §2) */
+    --color-brand:   #D94F2A;
+    --color-gold:    #C9973A;
+    --color-mok:     #4B7D1F;
+    --color-hwa:     #D94F2A;
+    --color-to:      #C17D2A;
+    --color-geum:    #9E9A8E;
     --color-su:      #2563EB;
+
+    /* 다크 캔버스 */
+    --canvas-black:  #0D0D1A;
+    --canvas-navy:   #131230;
+    --canvas-teal:   #0D1520;
+
+    /* 텍스트 */
+    --ink-dark:  #1A1824;
+    --ink-mid:   #6E6A7A;
+    --ink-cream: #F0EAD8;
+
+    /* 딥 네이비 — 모던 미니멀 프라이머리 */
+    --navy: #1A1A2E;
   }
 
+  /* iOS 탭 하이라이트 제거 */
   * {
     -webkit-tap-highlight-color: transparent;
   }
 
+  html {
+    /* 한국어 폰트 렌더링 최적화 */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    word-break: keep-all;
+  }
+
   body {
-    @apply text-gray-900 bg-white;
-    font-family: -apple-system, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+    @apply bg-white text-ink-dark;
+    font-family: 'Noto Sans KR', -apple-system, 'Apple SD Gothic Neo', system-ui, sans-serif;
+    line-height: 1.6;
+  }
+
+  /* 기본 포커스 링 — 금색 */
+  :focus-visible {
+    outline: 2px solid #C9973A;
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  /* ── 오행 칩 공통 ───────────────────────────────────────── */
+  .ohaeng-chip {
+    @apply inline-flex items-center gap-1 px-2.5 py-1 rounded-chip text-xs font-medium;
+  }
+  .ohaeng-mok  { background: #EBF5E1; color: #2D5A0E; }
+  .ohaeng-hwa  { background: #FDF0EB; color: #8C2E10; }
+  .ohaeng-to   { background: #FBF3E3; color: #7A4A0A; }
+  .ohaeng-geum { background: #F3F1EC; color: #4A4843; }
+  .ohaeng-su   { background: #E8F1FA; color: #1B4F85; }
+
+  /* ── 섹션 라벨 (overline 스타일) ─────────────────────────── */
+  .section-label {
+    @apply text-xs font-semibold tracking-wider uppercase;
+    color: var(--ink-mid);
+    letter-spacing: 0.08em;
+  }
+
+  /* ── 다크 히어로 그라디언트 ──────────────────────────────── */
+  .hero-dark {
+    background: linear-gradient(160deg, #0D0D1A 0%, #131230 55%, #0D1520 100%);
+  }
+
+  /* ── 헤더 아이콘 버튼 (다크) ─────────────────────────────── */
+  .icon-btn-dark {
+    @apply flex items-center justify-center rounded-full;
+    width: 44px;
+    height: 44px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.85);
+    transition: background 150ms ease;
+  }
+  .icon-btn-dark:hover {
+    background: rgba(255, 255, 255, 0.14);
+  }
+  .icon-btn-dark:active {
+    transform: scale(0.95);
+  }
+
+  /* ── 헤더 아이콘 버튼 (라이트) ─────────────────────────────── */
+  .icon-btn-light {
+    @apply flex items-center justify-center rounded-full;
+    width: 44px;
+    height: 44px;
+    background: rgba(26, 26, 46, 0.06);
+    border: 1px solid rgba(26, 26, 46, 0.10);
+    color: #1A1A2E;
+    transition: background 150ms ease;
+  }
+  .icon-btn-light:hover {
+    background: rgba(26, 26, 46, 0.10);
+  }
+  .icon-btn-light:active {
+    transform: scale(0.95);
+  }
+
+  /* ── 프라이머리 CTA 버튼 ──────────────────────────────────── */
+  .btn-primary {
+    @apply w-full py-4 rounded-btn font-bold text-white transition-all;
+    background: #D94F2A;
+    box-shadow: 0px 0px 0px 1px #D94F2A, 0px 4px 16px rgba(217, 79, 42, 0.30);
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 16px;
+    letter-spacing: -0.01em;
+  }
+  .btn-primary:hover  { background: #B83720; }
+  .btn-primary:active { transform: scale(0.98); }
+  .btn-primary:disabled {
+    background: #D1CFC9;
+    box-shadow: none;
+    cursor: not-allowed;
+  }
+
+  /* ── 진행률 바 ────────────────────────────────────────────── */
+  .progress-track {
+    height: 3px;
+    border-radius: 9999px;
+    background: rgba(0, 0, 0, 0.10);
+    flex: 1;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    border-radius: 9999px;
+    background: linear-gradient(90deg, #C9973A, #E8C060);
+    transition: width 300ms ease;
+  }
+
+  /* ── 화이트 카드 섹션 구분선 ──────────────────────────────── */
+  .section-divider {
+    height: 1px;
+    background: rgba(0, 0, 0, 0.06);
+    margin: 20px 0;
   }
 }
 
 @layer utilities {
-  /* 오행 칩 공통 */
-  .ohaeng-chip {
-    @apply inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium;
-  }
-  .ohaeng-mok  { @apply bg-[#EAF3DE] text-[#3B6D11]; }
-  .ohaeng-hwa  { @apply bg-[#FAECE7] text-[#993C1D]; }
-  .ohaeng-to   { @apply bg-[#FAEEDA] text-[#854F0B]; }
-  .ohaeng-geum { @apply bg-[#F1EFE8] text-[#444441]; }
-  .ohaeng-su   { @apply bg-[#E6F1FB] text-[#185FA5]; }
-
-  /* 바텀시트 안전 영역 */
+  /* iOS 안전 영역 */
   .pb-safe { padding-bottom: env(safe-area-inset-bottom, 16px); }
   .pt-safe { padding-top:    env(safe-area-inset-top, 0px); }
+
+  /* 한국어 단어 단위 줄바꿈 */
+  .break-keep { word-break: keep-all; }
+
+  /* 모션 감소 대응 */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
 }

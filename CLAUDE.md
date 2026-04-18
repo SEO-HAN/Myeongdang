@@ -161,6 +161,32 @@ OHAENG_LUCK   // { 목:['건강운','성장운'], 화:['열정운','사업운'],
 서울 15곳 + 전국 15곳. `supabase/migrations/002_seed_data.sql` 참조.
 각 장소: ohaeng TEXT[], luck_types TEXT[], trust_score, expert_verified, reason_text(풍수 근거)
 
+## 멀티 에이전트 구조
+
+```
+Orchestrator (이 세션)
+    ├── 🔮 SajuExpert      — 사주 도메인 전문가 (Phase C)
+    ├── 🎨 UXDesigner      — UX/UI 설계 & 검증 (Phase B)
+    ├── ⚡ DevEngineer     — Next.js/Supabase 구현 (전 Phase)
+    ├── 🧪 QAVerifier      — 계산 정확도 & 품질 게이트 (전 Phase)
+    └── 📊 PMAnalyst       — 지표 분석 & 우선순위 (계획 단계)
+```
+
+### 에이전트별 역할 & 권한
+
+| 에이전트 | 담당 파일 범위 | 활성화 조건 | 금지사항 |
+|---------|--------------|------------|---------|
+| SajuExpert | `lib/saju/**` | Phase C 또는 사주 계산 수정 시 | 엔진 외부에서 직접 계산 |
+| UXDesigner | `components/**`, `app/onboarding/**`, `app/result/**` | Phase B UX 변경 시 | 데스크탑 우선 설계 |
+| DevEngineer | `app/**`, `lib/**`, `store/**` | 구현 작업 전반 | 클라이언트에 서버 전용 키 노출 |
+| QAVerifier | `**/*.test.ts`, 품질 게이트 | Phase 완료 전 검증 | Mock DB를 실제 DB로 교체 |
+| PMAnalyst | `MASTERPLAN.md`, `WORKLOG.md` | Phase 전환 결정 시 | 검증 없는 Phase 완료 선언 |
+
+> 상세 에이전트 환경: `.claude/AGENT_ENV.md`  
+> 에이전트별 도메인 규칙: `.claude/rules/` (saju-domain-deep, ux-design, performance, testing-strategy)
+
+---
+
 ## 현재 진행 상태
 
 > **새 세션 시작 시 아래 파일을 순서대로 읽어 컨텍스트를 복원하세요**

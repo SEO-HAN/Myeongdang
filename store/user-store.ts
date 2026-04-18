@@ -29,6 +29,11 @@ interface UserState {
   profile: SajuProfile | null
   isProfileComplete: boolean
 
+  // 사용자 개인 정보
+  userName: string | null
+  userGender: 'male' | 'female' | null
+  luckPreference: string | null   // 온보딩에서 선택한 운 선호도 (재물운, 연애운 등)
+
   // 지도 필터
   activeOhaengFilter: Ohaeng[]    // 현재 활성 오행 필터 (빈 배열 = 전체)
   isPersonalizedMode: boolean     // 내 사주 기반 필터링 ON/OFF
@@ -43,7 +48,7 @@ interface UserState {
 
 interface UserActions {
   // 사주 계산 & 저장
-  setSaju: (input: SajuInput) => SajuResult
+  setSaju: (input: SajuInput, meta?: { name?: string; gender?: 'male' | 'female'; luckPreference?: string }) => SajuResult
   clearSaju: () => void
 
   // 필터 제어
@@ -70,6 +75,9 @@ export const useUserStore = create<UserState & UserActions>()(
       // ── 초기 상태 ──
       profile: null,
       isProfileComplete: false,
+      userName: null,
+      userGender: null,
+      luckPreference: null,
       activeOhaengFilter: [],
       isPersonalizedMode: false,
       selectedPlace: null,
@@ -77,7 +85,7 @@ export const useUserStore = create<UserState & UserActions>()(
       bookmarkedIds: [],
 
       // ── 사주 계산 ──
-      setSaju: (input: SajuInput) => {
+      setSaju: (input: SajuInput, meta?: { name?: string; gender?: 'male' | 'female'; luckPreference?: string }) => {
         const result = calculateSaju(input)
         const profile: SajuProfile = {
           input,
@@ -90,6 +98,9 @@ export const useUserStore = create<UserState & UserActions>()(
           // 사주 설정 시 자동으로 개인화 모드 ON + 부족 오행 필터 적용
           isPersonalizedMode: true,
           activeOhaengFilter: result.weakOhaeng,
+          userName: meta?.name ?? null,
+          userGender: meta?.gender ?? null,
+          luckPreference: meta?.luckPreference ?? null,
         })
         return result
       },
@@ -153,6 +164,9 @@ export const useUserStore = create<UserState & UserActions>()(
         profile: state.profile,
         isProfileComplete: state.isProfileComplete,
         bookmarkedIds: state.bookmarkedIds,
+        userName: state.userName,
+        userGender: state.userGender,
+        luckPreference: state.luckPreference,
       }),
     },
   ),

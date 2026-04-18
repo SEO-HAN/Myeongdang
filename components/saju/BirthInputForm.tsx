@@ -1,12 +1,3 @@
-/**
- * BirthInputForm — 생년월일시 3단계 입력 폼 (DESIGN.md 기반 리디자인)
- *
- * UX 원칙:
- *  - 3단계: 생년월일 통합 → 태어난 시간 → 기대하는 운
- *  - 각 단계 375px 기준 1뷰 완성
- *  - 슬라이드 애니메이션 방향 전환
- *  - 골드 진행률 바 + Noto Serif KR 헤딩
- */
 'use client'
 
 import { useState, useCallback, useEffect, useRef } from 'react'
@@ -29,26 +20,16 @@ interface BirthInputFormProps {
 }
 
 const CURRENT_YEAR = new Date().getFullYear()
+const QUICK_YEARS = [1975, 1980, 1985, 1990, 1995, 2000, 2005]
+const MONTH_LABELS = ['1','2','3','4','5','6','7','8','9','10','11','12']
+const TOTAL_STEPS = 3
 
-const MONTH_LABELS = [
-  '1월','2월','3월','4월','5월','6월',
-  '7월','8월','9월','10월','11월','12월',
-]
-
-const HOUR_LABELS = [
-  { value: 23, label: '밤 11시–새벽 1시', sub: '자시 子時' },
-  { value: 1,  label: '새벽 1–3시',       sub: '축시 丑時' },
-  { value: 3,  label: '새벽 3–5시',       sub: '인시 寅時' },
-  { value: 5,  label: '새벽 5–7시',       sub: '묘시 卯時' },
-  { value: 7,  label: '아침 7–9시',       sub: '진시 辰時' },
-  { value: 9,  label: '오전 9–11시',      sub: '사시 巳時' },
-  { value: 11, label: '오전 11시–오후 1시', sub: '오시 午時' },
-  { value: 13, label: '오후 1–3시',       sub: '미시 未時' },
-  { value: 15, label: '오후 3–5시',       sub: '신시 申時' },
-  { value: 17, label: '오후 5–7시',       sub: '유시 酉時' },
-  { value: 19, label: '저녁 7–9시',       sub: '술시 戌時' },
-  { value: 21, label: '밤 9–11시',        sub: '해시 亥時' },
-]
+// hour → 지시 인덱스 (engine.ts와 동일 알고리즘)
+function getJisiIdx(hour: number): number {
+  return hour === 23 ? 0 : Math.floor((hour + 1) / 2)
+}
+const JISI_KR    = ['자','축','인','묘','진','사','오','미','신','유','술','해']
+const JISI_HANJA = ['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥']
 
 const LUCK_TYPES = [
   { icon: '💰', label: '재물운', value: '재물운' },
@@ -59,143 +40,112 @@ const LUCK_TYPES = [
   { icon: '🏡', label: '부동산운', value: '부동산운' },
 ]
 
-const TOTAL_STEPS = 4
-
 const slideVariants = {
-  enter: (dir: number) => ({ x: dir > 0 ? 48 : -48, opacity: 0 }),
+  enter: (dir: number) => ({ x: dir > 0 ? 40 : -40, opacity: 0 }),
   center: { x: 0, opacity: 1 },
-  exit:  (dir: number) => ({ x: dir > 0 ? -48 : 48, opacity: 0 }),
-}
-
-// ── SVG 아이콘 ────────────────────────────────────────────────
-function CalendarIcon() {
-  return (
-    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-5 h-5">
-      <rect x="2.5" y="3.5" width="15" height="14" rx="2" />
-      <path strokeLinecap="round" d="M7 2v3M13 2v3M2.5 8.5h15" />
-    </svg>
-  )
-}
-
-function ClockIcon() {
-  return (
-    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-5 h-5">
-      <circle cx="10" cy="10" r="7.5" />
-      <path strokeLinecap="round" d="M10 6.5v3.75l2.5 2" />
-    </svg>
-  )
-}
-
-function SparklesIcon() {
-  return (
-    <svg viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
-      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-    </svg>
-  )
+  exit:  (dir: number) => ({ x: dir > 0 ? -40 : 40, opacity: 0 }),
 }
 
 export default function BirthInputForm({ onSubmit, isLoading = false }: BirthInputFormProps) {
-  // step: 0=이름+성별, 1=생년월일, 2=시간, 3=운
-  const [step, setStep]           = useState(0)
-  const [direction, setDir]       = useState(1)
+  const [step, setStep]     = useState(0)
+  const [direction, setDir] = useState(1)
 
-  // Step 0 상태
+  // Step 0
   const [name, setName]     = useState('')
   const [gender, setGender] = useState<'male' | 'female'>('male')
 
-  // Step 1 상태
-  const [year, setYear]   = useState('')
-  const [month, setMonth] = useState('')
-  const [day, setDay]     = useState('')
+  // Step 1
+  const [year, setYear]           = useState('')
+  const [month, setMonth]         = useState<number | null>(null)
+  const [day, setDay]             = useState<number | null>(null)
+  const [showMonth, setShowMonth] = useState(false)
+  const [showDay, setShowDay]     = useState(false)
 
-  // Step 2 상태
-  const [hour, setHour] = useState<number | null>(null)
-
-  // Step 3 상태
+  // Step 2
+  const [hour, setHour]           = useState<number | null>(null)
   const [luckPreference, setLuck] = useState<string | null>(null)
 
-  // 자동 진행 타이머 — 언마운트 시 클리어
-  const autoAdvanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-  useEffect(() => () => { if (autoAdvanceTimer.current) clearTimeout(autoAdvanceTimer.current) }, [])
+  const autoTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  useEffect(() => () => { if (autoTimer.current) clearTimeout(autoTimer.current) }, [])
 
   const go = useCallback((next: number) => {
-    if (autoAdvanceTimer.current) clearTimeout(autoAdvanceTimer.current)
+    if (autoTimer.current) clearTimeout(autoTimer.current)
     setDir(next > step ? 1 : -1)
     setStep(next)
   }, [step])
 
-  // Step 1: 연도·월·일 모두 유효하면 500ms 후 다음 단계 자동 이동
-  useEffect(() => {
-    if (step !== 1) return
-    const y = Number(year), m = Number(month), d = Number(day)
-    const valid = y >= 1900 && y <= CURRENT_YEAR && m >= 1 && m <= 12 && d >= 1 && d <= 31
-    if (!valid) return
-    const timer = setTimeout(() => go(2), 600)
-    return () => clearTimeout(timer)
-  }, [step, year, month, day, go])
+  const yearNum   = Number(year)
+  const yearValid = year !== '' && yearNum >= 1900 && yearNum <= CURRENT_YEAR
 
-  // Step 2: 시간 선택 후 600ms 자동 이동
-  const handleHourSelect = useCallback((value: number) => {
-    const next = value === hour ? null : value
-    setHour(next)
-    if (autoAdvanceTimer.current) clearTimeout(autoAdvanceTimer.current)
-    if (next !== null) {
-      autoAdvanceTimer.current = setTimeout(() => go(3), 600)
-    }
-  }, [hour, go])
+  // 연도 유효 → 월 그리드 등장
+  useEffect(() => {
+    if (yearValid && !showMonth) setShowMonth(true)
+  }, [yearValid, showMonth])
+
+  const handleYearChange = useCallback((val: string) => {
+    setYear(val)
+    setMonth(null)
+    setDay(null)
+    setShowMonth(false)
+    setShowDay(false)
+  }, [])
+
+  // 월 선택 → 일 그리드 등장
+  const handleMonthSelect = useCallback((m: number) => {
+    setMonth(m)
+    setDay(null)
+    setShowDay(true)
+  }, [])
+
+  // 일 선택 → 600ms 후 Step 2 이동
+  const handleDaySelect = useCallback((d: number) => {
+    setDay(d)
+    if (autoTimer.current) clearTimeout(autoTimer.current)
+    autoTimer.current = setTimeout(() => go(2), 600)
+  }, [go])
 
   const canProceed = useCallback((): boolean => {
     if (step === 0) return name.trim().length > 0
-    if (step === 1) {
-      const y = Number(year), m = Number(month), d = Number(day)
-      return y >= 1900 && y <= CURRENT_YEAR && m >= 1 && m <= 12 && d >= 1 && d <= 31
-    }
+    if (step === 1) return yearValid && month !== null && day !== null
     return true
-  }, [step, name, year, month, day])
+  }, [step, name, yearValid, month, day])
 
   const handleSubmit = useCallback(() => {
     onSubmit({
       name,
       gender,
-      year:  Number(year),
-      month: Number(month),
-      day:   Number(day),
-      hour:  hour ?? undefined,
+      year: yearNum,
+      month: month!,
+      day: day!,
+      hour: hour ?? undefined,
       luckPreference: luckPreference ?? undefined,
     })
-  }, [name, gender, year, month, day, hour, luckPreference, onSubmit])
+  }, [name, gender, yearNum, month, day, hour, luckPreference, onSubmit])
 
-  // 공통 입력 필드 스타일
-  const inputClass = (valid: boolean | null) => cn(
-    'w-full text-center text-xl font-bold py-3.5 rounded-input border-2 outline-none',
-    'transition-all duration-150 bg-parchment-warm text-ink-dark',
-    valid === true  ? 'border-gold'
-    : valid === false ? 'border-red-300 bg-red-50'
-    : 'border-transparent focus:border-gold focus:shadow-gold',
-  )
-
-  const yearValid  = year  !== '' ? Number(year)  >= 1900 && Number(year)  <= CURRENT_YEAR : null
-  const dayValid   = day   !== '' ? Number(day)   >= 1    && Number(day)   <= 31            : null
+  const selectedJisiIdx   = hour !== null ? getJisiIdx(hour) : null
+  const selectedJisiKr    = selectedJisiIdx !== null ? JISI_KR[selectedJisiIdx]    : null
+  const selectedJisiHanja = selectedJisiIdx !== null ? JISI_HANJA[selectedJisiIdx] : null
 
   return (
     <div className="w-full max-w-sm mx-auto px-4">
 
-      {/* ── 진행률 바 ──────────────────────────────────────── */}
+      {/* 진행률 바 */}
       <div className="mb-6">
         <div className="flex gap-1.5 mb-1">
           {Array.from({ length: TOTAL_STEPS }, (_, i) => (
-            <div key={i} className="progress-track">
-              {/* step 0이 완료된 것처럼 보이도록 i < step+1 기준 */}
-              {i <= step && <div className="progress-fill" style={{ width: '100%' }} />}
+            <div key={i} className="h-0.5 flex-1 rounded-full overflow-hidden" style={{ background: 'rgba(0,0,0,0.08)' }}>
+              <div
+                className="h-full rounded-full transition-all duration-300"
+                style={{ width: i <= step ? '100%' : '0%', background: '#1A1A2E' }}
+              />
             </div>
           ))}
         </div>
-        <p className="text-xs text-right" style={{ color: 'var(--ink-mid)' }}>
+        <p className="text-xs text-right tabular-nums" style={{ color: '#6E6A7A' }}>
           {step + 1} / {TOTAL_STEPS}
         </p>
       </div>
 
-      {/* ── 단계별 콘텐츠 ──────────────────────────────────── */}
       <div className="overflow-hidden">
         <AnimatePresence mode="wait" custom={direction}>
           <motion.div
@@ -212,21 +162,17 @@ export default function BirthInputForm({ onSubmit, isLoading = false }: BirthInp
             {step === 0 && (
               <div>
                 <div className="flex flex-col items-center mb-8">
-                  <p
-                    className="text-[11px] font-semibold uppercase tracking-widest mb-2"
-                    style={{ color: '#C9973A' }}
-                  >
+                  <p className="text-[11px] font-semibold uppercase tracking-widest mb-2" style={{ color: '#C9973A' }}>
                     명당지도에 오신 걸 환영해요
                   </p>
                   <h2
-                    className="text-2xl font-semibold text-center leading-snug text-ink-dark"
-                    style={{ fontFamily: 'Noto Serif KR, Georgia, serif' }}
+                    className="text-2xl font-semibold text-center leading-snug"
+                    style={{ fontFamily: 'Noto Serif KR, Georgia, serif', color: '#1A1A2E' }}
                   >
                     먼저 이름을 알려주세요
                   </h2>
                 </div>
 
-                {/* 이름 입력 */}
                 <div className="mb-6">
                   <input
                     type="text"
@@ -234,41 +180,27 @@ export default function BirthInputForm({ onSubmit, isLoading = false }: BirthInp
                     maxLength={10}
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full text-center text-xl font-bold rounded-2xl py-4 px-4 outline-none transition-all"
-                    style={{
-                      background: '#F5F1E8',
-                      border: '2px solid rgba(0,0,0,0.08)',
-                      color: '#1A1824',
-                      fontFamily: 'Noto Sans KR, sans-serif',
-                    }}
-                    onFocus={(e) => {
-                      e.target.style.borderColor = '#C9973A'
-                      e.target.style.boxShadow = '0 0 0 3px rgba(201,151,58,0.15)'
-                    }}
-                    onBlur={(e) => {
-                      e.target.style.borderColor = 'rgba(0,0,0,0.08)'
-                      e.target.style.boxShadow = 'none'
-                    }}
+                    className="w-full text-center text-xl font-bold rounded-2xl py-4 px-4 outline-none transition-all bg-white"
+                    style={{ border: '2px solid rgba(0,0,0,0.08)', color: '#1A1A2E' }}
+                    onFocus={(e) => { e.target.style.borderColor = '#1A1A2E' }}
+                    onBlur={(e)  => { e.target.style.borderColor = 'rgba(0,0,0,0.08)' }}
                   />
                 </div>
 
-                {/* 성별 선택 */}
-                <div className="mb-6">
-                  <p className="text-sm text-center mb-3" style={{ color: 'rgba(160,152,149,0.8)' }}>
-                    성별을 선택해주세요
-                  </p>
+                <div className="mb-8">
+                  <p className="text-sm text-center mb-3" style={{ color: '#6E6A7A' }}>성별을 선택해주세요</p>
                   <div className="grid grid-cols-2 gap-3">
                     {(['male', 'female'] as const).map((g) => (
                       <button
                         key={g}
                         onClick={() => setGender(g)}
-                        className="py-4 rounded-2xl font-semibold text-base transition-all cursor-pointer"
+                        className="py-4 rounded-[14px] font-semibold text-base transition-all"
                         style={gender === g
-                          ? { background: '#C9973A', color: '#fff', border: '2px solid #C9973A', boxShadow: '0 2px 8px rgba(201,151,58,0.25)' }
-                          : { background: 'rgba(0,0,0,0.04)', color: '#6E6A7A', border: '1.5px solid rgba(0,0,0,0.10)' }
+                          ? { background: '#1A1A2E', color: '#fff',   border: '2px solid #1A1A2E' }
+                          : { background: '#fff',    color: '#6E6A7A', border: '1.5px solid rgba(0,0,0,0.10)' }
                         }
                       >
-                        {g === 'male' ? '👨 남성' : '👩 여성'}
+                        {g === 'male' ? '남성' : '여성'}
                       </button>
                     ))}
                   </div>
@@ -277,11 +209,10 @@ export default function BirthInputForm({ onSubmit, isLoading = false }: BirthInp
                 <button
                   onClick={() => { if (name.trim()) go(1) }}
                   disabled={!name.trim()}
-                  className="w-full py-4 rounded-2xl font-bold text-base transition-all cursor-pointer"
+                  className="w-full py-4 rounded-[14px] font-bold text-base transition-all"
                   style={{
-                    background: name.trim() ? '#D94F2A' : '#E8E4DC',
-                    color: name.trim() ? '#fff' : '#A09AA8',
-                    boxShadow: name.trim() ? '0px 4px 16px rgba(217,79,42,0.3)' : 'none',
+                    background: name.trim() ? '#1A1A2E' : '#E8E4DC',
+                    color:      name.trim() ? '#fff'    : '#A09AA8',
                   }}
                 >
                   시작하기
@@ -289,49 +220,43 @@ export default function BirthInputForm({ onSubmit, isLoading = false }: BirthInp
               </div>
             )}
 
-            {/* ── STEP 1: 생년월일 ── */}
+            {/* ── STEP 1: 생년월일 그리드 ── */}
             {step === 1 && (
               <div>
-                <div className="flex items-center gap-2.5 mb-5">
-                  <span style={{ color: '#C9973A' }}><CalendarIcon /></span>
-                  <div>
-                    <h2
-                      className="text-lg font-semibold text-ink-dark"
-                      style={{ fontFamily: 'Noto Serif KR, Georgia, serif' }}
-                    >
-                      생년월일을 알려주세요
-                    </h2>
-                    <p className="text-xs mt-0.5" style={{ color: 'var(--ink-mid)' }}>
-                      양력 기준으로 입력해 주세요
-                    </p>
-                  </div>
-                </div>
+                <h2
+                  className="text-lg font-semibold mb-5"
+                  style={{ fontFamily: 'Noto Serif KR, Georgia, serif', color: '#1A1A2E' }}
+                >
+                  생년월일을 알려주세요
+                </h2>
 
-                {/* 연도 */}
+                {/* 연도 입력 */}
                 <div className="mb-4">
-                  <label className="section-label mb-1.5 block">태어난 해</label>
+                  <label className="block text-[11px] font-semibold mb-1.5 uppercase tracking-widest" style={{ color: '#C9973A' }}>
+                    태어난 해
+                  </label>
                   <input
                     type="number"
                     inputMode="numeric"
                     pattern="[0-9]*"
                     value={year}
-                    onChange={(e) => setYear(e.target.value)}
+                    onChange={(e) => handleYearChange(e.target.value)}
                     placeholder="예: 1993"
                     min={1900}
                     max={CURRENT_YEAR}
-                    className={inputClass(yearValid)}
+                    className="w-full text-center text-xl font-bold py-3.5 rounded-[10px] outline-none transition-all bg-white"
+                    style={{ border: `2px solid ${yearValid ? '#1A1A2E' : 'rgba(0,0,0,0.08)'}`, color: '#1A1A2E' }}
                   />
                   <div className="flex gap-1.5 mt-2 flex-wrap">
-                    {[1985, 1990, 1995, 2000, 2005].map((y) => (
+                    {QUICK_YEARS.map((y) => (
                       <button
                         key={y}
-                        onClick={() => setYear(String(y))}
-                        className={cn(
-                          'px-2.5 py-1 rounded-chip text-xs font-medium border transition-all cursor-pointer',
-                          year === String(y)
-                            ? 'border-gold text-gold bg-amber-50'
-                            : 'border-gray-200 text-ink-mid hover:border-gold/40',
-                        )}
+                        onClick={() => handleYearChange(String(y))}
+                        className="px-2.5 py-1 rounded-full text-xs font-medium transition-all"
+                        style={year === String(y)
+                          ? { background: '#1A1A2E', color: '#fff',   border: '1.5px solid #1A1A2E' }
+                          : { background: '#fff',    color: '#6E6A7A', border: '1.5px solid rgba(0,0,0,0.10)' }
+                        }
                       >
                         {y}
                       </button>
@@ -340,151 +265,163 @@ export default function BirthInputForm({ onSubmit, isLoading = false }: BirthInp
                 </div>
 
                 {/* 월 그리드 */}
-                <div className="mb-4">
-                  <label className="section-label mb-1.5 block">태어난 월</label>
-                  <div className="grid grid-cols-6 gap-1.5">
-                    {MONTH_LABELS.map((m, i) => (
+                {showMonth && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="mb-4"
+                  >
+                    <label className="block text-[11px] font-semibold mb-1.5 uppercase tracking-widest" style={{ color: '#C9973A' }}>
+                      태어난 월
+                    </label>
+                    <div className="grid grid-cols-4 gap-1.5">
+                      {MONTH_LABELS.map((m, i) => {
+                        const val      = i + 1
+                        const selected = month === val
+                        return (
+                          <button
+                            key={val}
+                            onClick={() => handleMonthSelect(val)}
+                            className="py-3 rounded-[10px] text-sm font-semibold transition-all"
+                            style={selected
+                              ? { background: '#1A1A2E', color: '#fff',   border: '2px solid #1A1A2E' }
+                              : { background: '#fff',    color: '#1A1A2E', border: '1.5px solid rgba(0,0,0,0.10)' }
+                            }
+                          >
+                            {m}월
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* 일 그리드 */}
+                {showDay && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <label className="block text-[11px] font-semibold mb-1.5 uppercase tracking-widest" style={{ color: '#C9973A' }}>
+                      태어난 일
+                    </label>
+                    <div className="grid grid-cols-7 gap-1">
+                      {Array.from({ length: 31 }, (_, i) => {
+                        const val      = i + 1
+                        const selected = day === val
+                        return (
+                          <button
+                            key={val}
+                            onClick={() => handleDaySelect(val)}
+                            className="aspect-square flex items-center justify-center rounded-[8px] text-xs font-semibold transition-all"
+                            style={selected
+                              ? { background: '#1A1A2E', color: '#fff' }
+                              : { background: '#fff', color: '#1A1A2E', border: '1px solid rgba(0,0,0,0.08)' }
+                            }
+                          >
+                            {val}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </motion.div>
+                )}
+              </div>
+            )}
+
+            {/* ── STEP 2: 시간 (0~23 그리드) + 운 선택 ── */}
+            {step === 2 && (
+              <div>
+                <h2
+                  className="text-lg font-semibold mb-1"
+                  style={{ fontFamily: 'Noto Serif KR, Georgia, serif', color: '#1A1A2E' }}
+                >
+                  태어난 시간이 기억나시나요?
+                </h2>
+                <p className="text-xs mb-4" style={{ color: '#6E6A7A' }}>
+                  정확할수록 시주(時柱) 분석이 완성돼요 · 선택
+                </p>
+
+                {/* 지시 안내 배너 */}
+                {hour !== null && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.97 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="mb-3 px-4 py-2.5 rounded-[10px] text-sm text-center font-medium"
+                    style={{ background: '#EEF2FB', color: '#1A1A2E' }}
+                  >
+                    {hour}시 →{' '}
+                    <span className="font-bold">
+                      {selectedJisiKr}시({selectedJisiHanja}時)
+                    </span>
+                    에 태어나셨군요 ✓
+                  </motion.div>
+                )}
+
+                {/* 0~23시 그리드 */}
+                <div className="grid grid-cols-6 gap-1 mb-2">
+                  {Array.from({ length: 24 }, (_, i) => {
+                    const selected  = hour === i
+                    const jisiHanja = JISI_HANJA[getJisiIdx(i)]
+                    return (
                       <button
                         key={i}
-                        onClick={() => setMonth(String(i + 1))}
-                        className={cn(
-                          'py-2.5 rounded-lg text-xs font-semibold border-2 transition-all cursor-pointer',
-                          month === String(i + 1)
-                            ? 'bg-gold text-white border-gold shadow-gold'
-                            : 'border-gray-200 text-ink-mid hover:border-gold/40 bg-white',
-                        )}
+                        onClick={() => setHour(hour === i ? null : i)}
+                        className="rounded-[10px] py-2 flex flex-col items-center gap-0.5 transition-all"
+                        style={selected
+                          ? { background: '#1A1A2E', color: '#fff' }
+                          : { background: '#fff', color: '#1A1A2E', border: '1px solid rgba(0,0,0,0.08)' }
+                        }
                       >
-                        {m}
+                        <span className="text-xs font-bold tabular-nums">{i}시</span>
+                        <span className={cn('text-[9px]', selected ? 'opacity-70' : 'opacity-40')}>
+                          {jisiHanja}
+                        </span>
+                      </button>
+                    )
+                  })}
+                </div>
+
+                <button
+                  onClick={() => setHour(null)}
+                  className="w-full text-xs mb-5 underline underline-offset-2 py-1"
+                  style={{ color: '#6E6A7A' }}
+                >
+                  시간을 잘 모르겠어요 · 건너뛰기
+                </button>
+
+                {/* 운 선택 */}
+                <div className="mb-4">
+                  <p className="text-[11px] font-semibold mb-2 uppercase tracking-widest" style={{ color: '#C9973A' }}>
+                    어떤 운을 원하시나요? · 선택
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {LUCK_TYPES.map(({ icon, label, value }) => (
+                      <button
+                        key={value}
+                        onClick={() => setLuck(luckPreference === value ? null : value)}
+                        className="flex items-center gap-2.5 px-3 py-3.5 rounded-[14px] text-left transition-all"
+                        style={luckPreference === value
+                          ? { background: '#1A1A2E', color: '#fff',   border: '2px solid #1A1A2E' }
+                          : { background: '#fff',    color: '#1A1A2E', border: '1.5px solid rgba(0,0,0,0.10)' }
+                        }
+                      >
+                        <span className="text-lg leading-none">{icon}</span>
+                        <span className="text-sm font-semibold">{label}</span>
                       </button>
                     ))}
                   </div>
                 </div>
 
-                {/* 일 */}
-                <div>
-                  <label className="section-label mb-1.5 block">태어난 일</label>
-                  <input
-                    type="number"
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    value={day}
-                    onChange={(e) => setDay(e.target.value)}
-                    placeholder="1–31"
-                    min={1}
-                    max={31}
-                    className={inputClass(dayValid)}
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* ── STEP 2: 태어난 시간 (선택) ── */}
-            {step === 2 && (
-              <div>
-                <div className="flex items-center gap-2.5 mb-5">
-                  <span style={{ color: '#C9973A' }}><ClockIcon /></span>
-                  <div>
-                    <h2
-                      className="text-lg font-semibold text-ink-dark"
-                      style={{ fontFamily: 'Noto Serif KR, Georgia, serif' }}
-                    >
-                      태어난 시간이 기억나시나요?
-                    </h2>
-                    <p className="text-xs mt-0.5" style={{ color: 'var(--ink-mid)' }}>
-                      알수록 사주 분석이 더 정확해져요 · 선택
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-1.5 max-h-64 overflow-y-auto pr-1">
-                  {HOUR_LABELS.map(({ value, label, sub }) => (
-                    <button
-                      key={value}
-                      onClick={() => handleHourSelect(value)}
-                      className={cn(
-                        'w-full px-4 py-3 rounded-lg border text-left transition-all cursor-pointer',
-                        'flex items-center justify-between',
-                        hour === value
-                          ? 'border-gold bg-amber-50/60'
-                          : 'border-gray-100 bg-white hover:border-gold/30',
-                      )}
-                    >
-                      <span className={cn(
-                        'text-sm font-medium',
-                        hour === value ? 'text-gold' : 'text-ink-dark',
-                      )}>{label}</span>
-                      <span className="text-xs text-ink-faint">{sub}</span>
-                    </button>
-                  ))}
-                </div>
-
-                <button
-                  onClick={() => {
-                    if (autoAdvanceTimer.current) clearTimeout(autoAdvanceTimer.current)
-                    setHour(null)
-                    go(3)
-                  }}
-                  className="w-full mt-3 text-sm text-ink-mid underline underline-offset-2 cursor-pointer"
-                >
-                  시간을 잘 모르겠어요 · 건너뛰기
-                </button>
-              </div>
-            )}
-
-            {/* ── STEP 3: 기대하는 운 (선택) ── */}
-            {step === 3 && (
-              <div>
-                <div className="flex items-center gap-2.5 mb-5">
-                  <span style={{ color: '#C9973A' }}><SparklesIcon /></span>
-                  <div>
-                    <h2
-                      className="text-lg font-semibold text-ink-dark"
-                      style={{ fontFamily: 'Noto Serif KR, Georgia, serif' }}
-                    >
-                      어떤 운을 원하시나요?
-                    </h2>
-                    <p className="text-xs mt-0.5" style={{ color: 'var(--ink-mid)' }}>
-                      맞춤 명당 추천에 활용돼요 · 선택
-                    </p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2 mb-4">
-                  {LUCK_TYPES.map(({ icon, label, value }) => (
-                    <button
-                      key={value}
-                      onClick={() => setLuck(luckPreference === value ? null : value)}
-                      className={cn(
-                        'flex items-center gap-3 px-3 py-4 rounded-btn border-2 text-left',
-                        'transition-all duration-150 cursor-pointer',
-                        luckPreference === value
-                          ? 'border-gold bg-amber-50/70 scale-[1.02]'
-                          : 'border-gray-100 bg-white hover:border-gold/30',
-                      )}
-                    >
-                      <span className="text-xl leading-none">{icon}</span>
-                      <span className={cn(
-                        'text-sm font-semibold',
-                        luckPreference === value ? 'text-gold' : 'text-ink-dark',
-                      )}>
-                        {label}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-
                 {/* 입력 요약 */}
-                <div
-                  className="rounded-lg px-4 py-3 text-sm flex items-center gap-2"
-                  style={{ background: '#F3F1EC' }}
-                >
-                  <span className="text-base">🗓️</span>
-                  <span className="text-ink-dark font-medium">
+                <div className="rounded-[10px] px-4 py-3 text-sm" style={{ background: '#F3F3F0' }}>
+                  <span className="font-medium" style={{ color: '#1A1A2E' }}>
                     {year}년 {month}월 {day}일
                     {hour !== null && (
-                      <span className="text-ink-mid font-normal">
-                        {' · '}
-                        {HOUR_LABELS.find(h => h.value === hour)?.label}
+                      <span style={{ color: '#6E6A7A' }}>
+                        {' · '}{hour}시 ({selectedJisiHanja}時)
                       </span>
                     )}
                   </span>
@@ -496,56 +433,48 @@ export default function BirthInputForm({ onSubmit, isLoading = false }: BirthInp
         </AnimatePresence>
       </div>
 
-      {/* ── 버튼 영역 (step 0은 자체 버튼 사용, step 1~3만 공통 버튼) ── */}
+      {/* 네비게이션 버튼 — Step 0은 자체 버튼, Step 1~2만 공통 */}
       {step > 0 && (
-      <div className="flex gap-2.5 mt-6">
-        <button
-          onClick={() => go(step - 1)}
-          className={cn(
-            'flex-1 py-4 rounded-btn border-2 font-semibold text-sm',
-            'border-gray-200 text-ink-mid hover:border-gold/40 transition-colors cursor-pointer',
-          )}
-        >
-          이전
-        </button>
+        <div className="flex gap-2.5 mt-6">
+          <button
+            onClick={() => go(step - 1)}
+            className="flex-1 py-4 rounded-[14px] font-semibold text-sm transition-all"
+            style={{ background: '#fff', color: '#6E6A7A', border: '1.5px solid rgba(0,0,0,0.10)' }}
+          >
+            이전
+          </button>
 
-        {step < TOTAL_STEPS - 1 ? (
-          <button
-            onClick={() => go(step + 1)}
-            disabled={!canProceed()}
-            className={cn(
-              'flex-[2] py-4 rounded-btn font-bold text-white text-sm transition-all cursor-pointer',
-              canProceed()
-                ? 'btn-primary'
-                : 'bg-gray-200 text-gray-400 cursor-not-allowed',
-            )}
-            style={canProceed() ? {} : { boxShadow: 'none' }}
-          >
-            다음
-          </button>
-        ) : (
-          <button
-            onClick={handleSubmit}
-            disabled={isLoading || !canProceed()}
-            className={cn(
-              'flex-[2] py-4 rounded-btn font-bold text-white text-sm transition-all cursor-pointer',
-              isLoading
-                ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                : 'btn-primary',
-            )}
-            style={isLoading ? { boxShadow: 'none' } : {}}
-          >
-            {isLoading ? (
-              <span className="flex items-center justify-center gap-2">
-                <span className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
-                분석 중...
-              </span>
-            ) : (
-              '내 오행 분석하기'
-            )}
-          </button>
-        )}
-      </div>
+          {step < TOTAL_STEPS - 1 ? (
+            <button
+              onClick={() => { if (canProceed()) go(step + 1) }}
+              disabled={!canProceed()}
+              className="flex-[2] py-4 rounded-[14px] font-bold text-sm transition-all"
+              style={{
+                background: canProceed() ? '#1A1A2E' : '#E8E4DC',
+                color:      canProceed() ? '#fff'    : '#A09AA8',
+              }}
+            >
+              다음
+            </button>
+          ) : (
+            <button
+              onClick={handleSubmit}
+              disabled={isLoading || !canProceed()}
+              className="flex-[2] py-4 rounded-[14px] font-bold text-sm transition-all"
+              style={{
+                background: isLoading ? '#E8E4DC' : '#1A1A2E',
+                color:      isLoading ? '#A09AA8' : '#fff',
+              }}
+            >
+              {isLoading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <span className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                  분석 중...
+                </span>
+              ) : '내 사주 분석하기'}
+            </button>
+          )}
+        </div>
       )}
     </div>
   )

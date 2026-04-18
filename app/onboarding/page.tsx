@@ -19,10 +19,11 @@ export default function OnboardingPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          year:  data.year,
-          month: data.month,
-          day:   data.day,
-          hour:  data.hour,
+          year:   data.year,
+          month:  data.month,
+          day:    data.day,
+          hour:   data.hour,
+          minute: data.minute,
         }),
       })
       const json = await res.json()
@@ -38,6 +39,7 @@ export default function OnboardingPage() {
         m: String(data.month),
         d: String(data.day),
         ...(data.hour !== undefined && { h: String(data.hour) }),
+        ...(data.hour !== undefined && data.minute !== undefined && { min: String(data.minute) }),
         ...(data.luckPreference && { luck: data.luckPreference }),
       })
       router.push(`/result?${params.toString()}`)

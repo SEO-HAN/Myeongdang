@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>명당지도 — 사주 입력 UX 설계안</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, 'Noto Sans KR', sans-serif;
+    background: #F0EDE8;
+    min-height: 100vh;
+    padding: 32px 16px;
+    color: #1A1A2E;
+  }
+
+  .page-title {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+  .page-title h1 {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1A1A2E;
+    margin-bottom: 6px;
+  }
+  .page-title p {
+    font-size: 13px;
+    color: #6E6A7A;
+  }
+
+  /* ── 3-up 디바이스 프레임 ── */
+  .frames {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 32px;
+  }
+
+  .frame-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+  .frame-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: #C9973A;
+    text-transform: uppercase;
+  }
+
+  .phone {
+    width: 300px;
+    background: #FAFAF8;
+    border-radius: 32px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.10);
+    overflow: hidden;
+    border: 1px solid rgba(0,0,0,0.06);
+  }
+  /* 상단 헤더 */
+  .phone-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px 12px;
+    background: #FAFAF8;
+  }
+  .phone-header .back-btn {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: #F0EDE8;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; color: #1A1A2E;
+  }
+  .phone-header .brand {
+    font-size: 14px;
+    font-weight: 700;
+    font-family: 'Georgia', serif;
+    color: #1A1A2E;
+  }
+  .phone-header .brand span {
+    display: block;
+    font-size: 9px;
+    font-weight: 600;
+    color: #C9973A;
+    text-align: center;
+    letter-spacing: 0.05em;
+  }
+
+  /* 흰 카드 영역 */
+  .phone-body {
+    background: #fff;
+    border-radius: 28px 28px 0 0;
+    padding: 24px 20px 28px;
+    box-shadow: 0 -2px 20px rgba(0,0,0,0.05);
+    min-height: 500px;
+  }
+
+  /* 진행 바 */
+  .progress-bar {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 24px;
+  }
+  .progress-segment {
+    height: 2px;
+    flex: 1;
+    border-radius: 2px;
+  }
+  .progress-segment.done { background: #1A1A2E; }
+  .progress-segment.active { background: #1A1A2E; opacity: 0.4; }
+  .progress-segment.todo { background: #E8E4DC; }
+
+  /* 스텝 타이틀 */
+  .step-eyebrow {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: #C9973A;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .step-title {
+    font-family: 'Georgia', serif;
+    font-size: 20px;
+    font-weight: 600;
+    color: #1A1A2E;
+    line-height: 1.3;
+    margin-bottom: 4px;
+  }
+  .step-sub {
+    font-size: 12px;
+    color: #9E9AAA;
+    margin-bottom: 24px;
+  }
+
+  /* ──── STEP 1: 이름/성별 ──── */
+  .name-input {
+    width: 100%;
+    font-size: 28px;
+    font-weight: 700;
+    font-family: 'Georgia', serif;
+    color: #1A1A2E;
+    border: none;
+    border-bottom: 2px solid #1A1A2E;
+    background: transparent;
+    text-align: center;
+    padding: 8px 0 10px;
+    margin-bottom: 28px;
+    outline: none;
+    letter-spacing: 0.04em;
+  }
+  .name-input::placeholder { color: #D0CDD8; }
+
+  .gender-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 32px;
+  }
+  .gender-btn {
+    flex: 1;
+    padding: 14px;
+    border-radius: 14px;
+    font-size: 15px;
+    font-weight: 600;
+    text-align: center;
+    cursor: pointer;
+    border: 1.5px solid rgba(0,0,0,0.08);
+    background: #fff;
+    color: #6E6A7A;
+  }
+  .gender-btn.active {
+    background: #1A1A2E;
+    color: #fff;
+    border-color: #1A1A2E;
+  }
+
+  /* ──── STEP 2: 생년월일 — 세그먼트 입력 ──── */
+  .date-segment-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 0;
+    margin-bottom: 8px;
+  }
+  .seg-field {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .seg-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: #C9973A;
+    margin-bottom: 6px;
+  }
+  .seg-input {
+    width: 100%;
+    text-align: center;
+    font-size: 26px;
+    font-weight: 700;
+    color: #1A1A2E;
+    border: none;
+    border-bottom: 2.5px solid #E8E4DC;
+    background: transparent;
+    padding: 4px 0 8px;
+    outline: none;
+    font-family: -apple-system, monospace;
+    letter-spacing: 0.02em;
+  }
+  .seg-input.filled { border-bottom-color: #1A1A2E; }
+  .seg-input.active { border-bottom-color: #C9973A; }
+  .seg-input::placeholder { color: #D0CDD8; }
+  .seg-divider {
+    font-size: 22px;
+    font-weight: 300;
+    color: #D0CDD8;
+    padding: 0 4px 10px;
+    align-self: flex-end;
+  }
+
+  /* 힌트 텍스트 */
+  .date-hint {
+    font-size: 11px;
+    color: #B0ADBA;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+  .date-hint strong { color: #C9973A; }
+
+  /* 빠른 선택 칩 */
+  .quick-chips {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+  }
+  .chip {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1.5px solid rgba(0,0,0,0.08);
+    background: #fff;
+    color: #6E6A7A;
+  }
+  .chip.active {
+    background: #1A1A2E;
+    color: #fff;
+    border-color: #1A1A2E;
+  }
+
+  /* 절기 안내 배너 */
+  .solar-banner {
+    background: #FFF8F0;
+    border: 1px solid #F5E4C4;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 11px;
+    color: #8B6914;
+    margin-bottom: 20px;
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+  }
+  .solar-banner .icon { font-size: 14px; flex-shrink: 0; }
+
+  /* ──── STEP 3: 시간 ──── */
+  .time-section { margin-bottom: 20px; }
+  .time-label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .time-big-input {
+    width: 100%;
+    text-align: center;
+    font-size: 52px;
+    font-weight: 700;
+    color: #1A1A2E;
+    border: none;
+    border-bottom: 3px solid #1A1A2E;
+    background: transparent;
+    padding: 4px 0 12px;
+    outline: none;
+    font-family: -apple-system, monospace;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+  }
+  .time-big-input::placeholder { color: #D0CDD8; }
+  .jisi-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #EEF2FB;
+    border-radius: 8px;
+    padding: 6px 14px;
+    margin: 0 auto;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1A4CB0;
+    width: fit-content;
+  }
+  .skip-link {
+    display: block;
+    text-align: center;
+    font-size: 12px;
+    color: #B0ADBA;
+    text-decoration: underline;
+    margin-top: 10px;
+    margin-bottom: 20px;
+    text-underline-offset: 3px;
+  }
+
+  /* ──── 하단 CTA 버튼 ──── */
+  .cta-btn {
+    width: 100%;
+    padding: 16px;
+    border-radius: 16px;
+    font-size: 16px;
+    font-weight: 700;
+    text-align: center;
+    background: #1A1A2E;
+    color: #fff;
+    border: none;
+    letter-spacing: 0.01em;
+  }
+  .cta-btn.disabled {
+    background: #E8E4DC;
+    color: #B0ADBA;
+  }
+  .cta-sub {
+    text-align: center;
+    font-size: 11px;
+    color: #B0ADBA;
+    margin-top: 10px;
+  }
+
+  /* ──── 결과 사주팔자 카드 ──── */
+  .saju-card {
+    background: #fff;
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    margin-bottom: 16px;
+  }
+  .saju-eyebrow {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: #C9973A;
+    margin-bottom: 14px;
+    text-transform: uppercase;
+  }
+  .pillars-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .pillar {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: #F8F6F2;
+    border-radius: 12px;
+    padding: 12px 6px;
+    position: relative;
+  }
+  .pillar.day-pillar {
+    background: #1A1A2E;
+  }
+  .pillar-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: #B0ADBA;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+  }
+  .pillar.day-pillar .pillar-label { color: rgba(255,255,255,0.5); }
+  .cheongan {
+    font-size: 26px;
+    font-weight: 700;
+    font-family: 'Georgia', serif;
+    color: #1A1A2E;
+    line-height: 1;
+    margin-bottom: 2px;
+  }
+  .pillar.day-pillar .cheongan { color: #fff; }
+  .cheongan-kr {
+    font-size: 10px;
+    font-weight: 600;
+    color: #6E6A7A;
+    margin-bottom: 10px;
+  }
+  .pillar.day-pillar .cheongan-kr { color: rgba(255,255,255,0.6); }
+  .jiji {
+    font-size: 22px;
+    font-weight: 700;
+    font-family: 'Georgia', serif;
+    color: #1A1A2E;
+    line-height: 1;
+    margin-bottom: 2px;
+  }
+  .pillar.day-pillar .jiji { color: #fff; }
+  .jiji-kr {
+    font-size: 10px;
+    font-weight: 600;
+    color: #6E6A7A;
+  }
+  .pillar.day-pillar .jiji-kr { color: rgba(255,255,255,0.6); }
+  .ohaeng-dot {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+  }
+
+  /* 오행 강도 바 */
+  .ohaeng-bars { display: flex; flex-direction: column; gap: 6px; }
+  .ohaeng-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .ohaeng-name {
+    font-size: 11px;
+    font-weight: 700;
+    width: 16px;
+    text-align: center;
+  }
+  .bar-track {
+    flex: 1;
+    height: 6px;
+    background: #F0EDE8;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%;
+    border-radius: 3px;
+  }
+  .bar-pct {
+    font-size: 10px;
+    font-weight: 600;
+    color: #6E6A7A;
+    width: 28px;
+    text-align: right;
+  }
+
+  /* 안내 캡션 */
+  .annotation {
+    display: flex;
+    gap: 10px;
+    padding: 14px 16px;
+    background: #F8F6F2;
+    border-radius: 12px;
+    margin-top: 12px;
+  }
+  .annotation-icon { font-size: 18px; flex-shrink: 0; }
+  .annotation-text { font-size: 12px; color: #6E6A7A; line-height: 1.5; }
+  .annotation-text strong { color: #1A1A2E; }
+
+  /* 레이아웃 주석 */
+  .design-notes {
+    background: #fff;
+    border-radius: 16px;
+    padding: 20px;
+    margin-top: 24px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .design-notes h3 {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1A1A2E;
+    margin-bottom: 12px;
+  }
+  .note-item {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    margin-bottom: 8px;
+  }
+  .note-num {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: #1A1A2E;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .note-text { font-size: 12px; color: #4A4843; line-height: 1.5; }
+  .note-text strong { color: #1A1A2E; }
+</style>
+</head>
+<body>
+
+<div class="page-title">
+  <h1>명당지도 사주 입력 — 단순 입력 설계안</h1>
+  <p>10년차 SV 시니어 PM 기준: 최소 입력 마찰 · 즉각 피드백 · 완벽한 접근성</p>
+</div>
+
+<div class="frames">
+
+  <!-- STEP 1: 이름 + 성별 -->
+  <div class="frame-wrap">
+    <div class="frame-label">Step 1 — 이름 + 성별</div>
+    <div class="phone">
+      <div class="phone-header">
+        <div class="back-btn">←</div>
+        <div class="brand">명당지도<span>오행 분석</span></div>
+        <div style="width:36px;"></div>
+      </div>
+      <div class="phone-body">
+        <div class="progress-bar">
+          <div class="progress-segment active"></div>
+          <div class="progress-segment todo"></div>
+          <div class="progress-segment todo"></div>
+        </div>
+        <div class="step-eyebrow">1 / 3 — 기본 정보</div>
+        <div class="step-title">이름이<br>어떻게 되세요?</div>
+        <div class="step-sub">사주 분석 결과에 이름이 사용됩니다</div>
+
+        <input class="name-input" value="김민준" />
+
+        <div class="gender-row">
+          <div class="gender-btn active">남성</div>
+          <div class="gender-btn">여성</div>
+        </div>
+
+        <button class="cta-btn">다음 →</button>
+        <p class="cta-sub">이름은 저장되지 않습니다</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2: 생년월일 세그먼트 입력 -->
+  <div class="frame-wrap">
+    <div class="frame-label">Step 2 — 생년월일 (핵심 개선)</div>
+    <div class="phone">
+      <div class="phone-header">
+        <div class="back-btn">←</div>
+        <div class="brand">명당지도<span>오행 분석</span></div>
+        <div style="width:36px;"></div>
+      </div>
+      <div class="phone-body">
+        <div class="progress-bar">
+          <div class="progress-segment done"></div>
+          <div class="progress-segment active"></div>
+          <div class="progress-segment todo"></div>
+        </div>
+        <div class="step-eyebrow">2 / 3 — 생년월일</div>
+        <div class="step-title">태어난 날을<br>입력해주세요</div>
+        <div class="step-sub">양력 기준 · 정확할수록 정밀한 분석</div>
+
+        <!-- 핵심: 세그먼트 입력 (4자리+2자리+2자리 → 자동 이동) -->
+        <div class="date-segment-row">
+          <div class="seg-field" style="flex:2;">
+            <div class="seg-label">년</div>
+            <input class="seg-input filled" value="1993" maxlength="4" />
+          </div>
+          <div class="seg-divider">/</div>
+          <div class="seg-field">
+            <div class="seg-label">월</div>
+            <input class="seg-input filled" value="06" maxlength="2" />
+          </div>
+          <div class="seg-divider">/</div>
+          <div class="seg-field">
+            <div class="seg-label">일</div>
+            <input class="seg-input active" value="15" maxlength="2" placeholder="DD"/>
+          </div>
+        </div>
+
+        <div class="date-hint">
+          <strong>1993년 6월 15일</strong> · 입력 완료 후 자동으로 다음 칸 이동
+        </div>
+
+        <!-- 절기 경계 스마트 안내 -->
+        <div class="solar-banner">
+          <div class="icon">🗓</div>
+          <div>
+            <strong style="display:block;margin-bottom:2px;">입춘 기준 안내</strong>
+            이 날짜는 입춘(2/4) 이후이므로 1993년 사주로 계산됩니다.
+            <span style="color:#C9973A;font-weight:600;">·경유년(庚酉年)</span>
+          </div>
+        </div>
+
+        <!-- 빠른 연도 칩 -->
+        <div class="quick-chips">
+          <div class="chip">1980</div>
+          <div class="chip">1985</div>
+          <div class="chip">1990</div>
+          <div class="chip active">1993</div>
+          <div class="chip">1995</div>
+          <div class="chip">2000</div>
+        </div>
+
+        <button class="cta-btn">다음 →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3: 시간 입력 -->
+  <div class="frame-wrap">
+    <div class="frame-label">Step 3 — 태어난 시간 (선택)</div>
+    <div class="phone">
+      <div class="phone-header">
+        <div class="back-btn">←</div>
+        <div class="brand">명당지도<span>오행 분석</span></div>
+        <div style="width:36px;"></div>
+      </div>
+      <div class="phone-body">
+        <div class="progress-bar">
+          <div class="progress-segment done"></div>
+          <div class="progress-segment done"></div>
+          <div class="progress-segment active"></div>
+        </div>
+        <div class="step-eyebrow">3 / 3 — 태어난 시간 (선택)</div>
+        <div class="step-title">몇 시에<br>태어나셨나요?</div>
+        <div class="step-sub">0 ~ 23시 입력 · 시주(時柱) 완성에 필요</div>
+
+        <!-- 큰 시간 입력 -->
+        <div class="time-section">
+          <input class="time-big-input" value="14" placeholder="--" maxlength="2" type="number" />
+          <!-- 실시간 지시 배지 -->
+          <div style="text-align:center; margin-bottom:6px;">
+            <div class="jisi-badge">
+              ☯ 14시 → 미시(未時) · 토(土) 기운
+            </div>
+          </div>
+          <a class="skip-link">시간을 정확히 모르겠어요 → 건너뛰기</a>
+        </div>
+
+        <!-- 입력 요약 카드 -->
+        <div style="background:#F8F6F2; border-radius:14px; padding:14px 16px; margin-bottom:20px;">
+          <div style="font-size:10px; color:#B0ADBA; font-weight:700; letter-spacing:0.08em; margin-bottom:6px;">입력 요약</div>
+          <div style="font-size:16px; font-weight:700; color:#1A1A2E; margin-bottom:2px;">1993년 6월 15일 오후 2시</div>
+          <div style="font-size:12px; color:#6E6A7A;">계유년 · 오월 · 계해일 · 미시</div>
+        </div>
+
+        <button class="cta-btn" style="background:linear-gradient(135deg,#1A1A2E 0%,#2D2840 100%);">
+          내 사주 분석하기 ✦
+        </button>
+        <p class="cta-sub">연산에 약 1초 소요됩니다</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- 결과 페이지 사주팔자 카드 개선안 -->
+<div style="max-width:480px; margin:0 auto;">
+  <div style="text-align:center; margin-bottom:16px;">
+    <div style="font-size:11px; font-weight:700; letter-spacing:0.1em; color:#C9973A; text-transform:uppercase; margin-bottom:4px;">결과 페이지 — 사주팔자 카드 개선</div>
+    <div style="font-size:13px; color:#6E6A7A;">4기둥을 명확하게 · 일주(日柱) 강조</div>
+  </div>
+
+  <div class="saju-card">
+    <div class="saju-eyebrow">사주팔자 (四柱八字)</div>
+    <div class="pillars-row">
+      <div class="pillar">
+        <div class="ohaeng-dot" style="background:#3B6D11;"></div>
+        <div class="pillar-label">년주</div>
+        <div class="cheongan">癸</div>
+        <div class="cheongan-kr">계·수</div>
+        <div class="jiji">酉</div>
+        <div class="jiji-kr">유·금</div>
+      </div>
+      <div class="pillar">
+        <div class="ohaeng-dot" style="background:#E8593C;"></div>
+        <div class="pillar-label">월주</div>
+        <div class="cheongan">甲</div>
+        <div class="cheongan-kr">갑·목</div>
+        <div class="jiji">午</div>
+        <div class="jiji-kr">오·화</div>
+      </div>
+      <div class="pillar day-pillar">
+        <div class="ohaeng-dot" style="background:#C9973A; opacity:0.8;"></div>
+        <div class="pillar-label">일주 (나)</div>
+        <div class="cheongan">癸</div>
+        <div class="cheongan-kr">계·수</div>
+        <div class="jiji">亥</div>
+        <div class="jiji-kr">해·수</div>
+      </div>
+      <div class="pillar">
+        <div class="ohaeng-dot" style="background:#BA7517;"></div>
+        <div class="pillar-label">시주</div>
+        <div class="cheongan">己</div>
+        <div class="cheongan-kr">기·토</div>
+        <div class="jiji">未</div>
+        <div class="jiji-kr">미·토</div>
+      </div>
+    </div>
+
+    <!-- 오행 강도 바 -->
+    <div class="ohaeng-bars">
+      <div class="ohaeng-row">
+        <div class="ohaeng-name" style="color:#3B6D11;">목</div>
+        <div class="bar-track"><div class="bar-fill" style="width:18%;background:#3B6D11;"></div></div>
+        <div class="bar-pct">18%</div>
+      </div>
+      <div class="ohaeng-row">
+        <div class="ohaeng-name" style="color:#E8593C;">화</div>
+        <div class="bar-track"><div class="bar-fill" style="width:22%;background:#E8593C;"></div></div>
+        <div class="bar-pct">22%</div>
+      </div>
+      <div class="ohaeng-row">
+        <div class="ohaeng-name" style="color:#BA7517;">토</div>
+        <div class="bar-track"><div class="bar-fill" style="width:30%;background:#BA7517;"></div></div>
+        <div class="bar-pct">30%</div>
+      </div>
+      <div class="ohaeng-row">
+        <div class="ohaeng-name" style="color:#888780;">금</div>
+        <div class="bar-track"><div class="bar-fill" style="width:8%;background:#888780;"></div></div>
+        <div class="bar-pct">8%</div>
+      </div>
+      <div class="ohaeng-row">
+        <div class="ohaeng-name" style="color:#2563EB;">수</div>
+        <div class="bar-track"><div class="bar-fill" style="width:22%;background:#2563EB;"></div></div>
+        <div class="bar-pct">22%</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 설계 원칙 주석 -->
+  <div class="design-notes">
+    <h3>🎯 핵심 설계 원칙 (SV Senior PM)</h3>
+    <div class="note-item">
+      <div class="note-num">1</div>
+      <div class="note-text"><strong>세그먼트 자동 이동</strong> — YYYY(4자리) 입력 완료 시 MM으로, MM(2자리) 완료 시 DD로 자동 포커스 이동. 키보드 한 번에 날짜 입력 완료.</div>
+    </div>
+    <div class="note-item">
+      <div class="note-num">2</div>
+      <div class="note-text"><strong>실시간 절기 피드백</strong> — 날짜 입력 즉시 "입춘 이전/이후" 안내 + 해당 사주 년도 표시. 사용자가 결과를 미리 이해.</div>
+    </div>
+    <div class="note-item">
+      <div class="note-num">3</div>
+      <div class="note-text"><strong>시간 단독 입력 필드</strong> — 24셀 그리드 대신 숫자 2자리 직접 입력 + 실시간 지시(地支時) 변환 배지. 인지 부담 ↓, 정확도 ↑.</div>
+    </div>
+    <div class="note-item">
+      <div class="note-num">4</div>
+      <div class="note-text"><strong>결과 사주팔자 4기둥 명시</strong> — 년/월/일/시주 한자·한글·오행 함께 표시. 일주(나)를 어두운 배경으로 강조.</div>
+    </div>
+    <div class="note-item">
+      <div class="note-num">5</div>
+      <div class="note-text"><strong>입력 요약 카드</strong> — Step 3에서 전체 입력값(년월일시) + 4기둥 요약 미리보기. 제출 전 확인 단계.</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

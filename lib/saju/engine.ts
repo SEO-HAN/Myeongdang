@@ -536,8 +536,14 @@ export function calculateSaju(input: SajuInput): SajuResult {
   const monthPillar = buildPillar(monthCheonganIdx, monthJijiIdx);
 
   // ── 일주 ──
-  const dayCheonganIdx = getDayCheonganIdx(year, month, day);
-  const dayJijiIdx = getDayJijiIdx(year, month, day);
+  // 야자시(野子時) 처리: hour===23이면 일주는 전날 날짜 기준
+  // 전통 명리: 밤 11시(23시)는 子時지만 당일 일주에 귀속
+  const dayDate = (hour !== undefined && hour === 23)
+    ? new Date(year, month - 1, day - 1)  // 전날 기준
+    : new Date(year, month - 1, day);
+  const dayDiff = daysBetween(ANCHOR_DATE, dayDate);
+  const dayCheonganIdx = ((ANCHOR_CHEONGAN_IDX + dayDiff) % 10 + 10) % 10;
+  const dayJijiIdx = ((ANCHOR_JIJI_IDX + dayDiff) % 12 + 12) % 12;
   const dayPillar = buildPillar(dayCheonganIdx, dayJijiIdx);
 
   // ── 시주 (선택) ──

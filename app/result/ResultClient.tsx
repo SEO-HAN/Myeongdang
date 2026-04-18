@@ -20,7 +20,7 @@ import OhaengStrengthBar from '@/components/saju/OhaengStrengthBar'
 import { useUserStore } from '@/store/user-store'
 import { OHAENG_EMOJI, OHAENG_COLOR } from '@/lib/saju/types'
 import { buildSajuNarrative, buildYongshinNarrative, buildDetailedPlaceNarrative } from '@/lib/saju/explain'
-import type { SajuResult, Ohaeng } from '@/lib/saju/types'
+import type { SajuResult, Ohaeng, Pillar } from '@/lib/saju/types'
 import type { ScoredPlace } from '@/lib/saju/recommend'
 
 interface ResultClientProps {
@@ -200,6 +200,137 @@ export default function ResultClient({ result, luckPreference: luckProp }: Resul
             >
               {result.bodyStrength === 'strong' ? '신강(身强)' : result.bodyStrength === 'weak' ? '신약(身弱)' : '중화(中和)'}
             </span>
+          </div>
+
+          {/* 사주 4기둥 */}
+          <div className="grid grid-cols-4 gap-2 mb-4">
+            {([
+              { label: '년주', pillar: result.pillars.year },
+              { label: '월주', pillar: result.pillars.month },
+              { label: '일주', pillar: result.pillars.day },
+              { label: '시주', pillar: result.pillars.hour },
+            ] as Array<{ label: string; pillar: Pillar | null }>).map(({ label, pillar }) => {
+              const isDay = label === '일주'
+              const chHex = pillar ? OHAENG_COLOR[pillar.cheonganOhaeng].hex : '#B0ADBA'
+              return (
+                <div
+                  key={label}
+                  style={{
+                    position: 'relative',
+                    borderRadius: 12,
+                    padding: '10px 6px',
+                    background: pillar
+                      ? isDay ? '#1A1A2E' : '#F8F6F2'
+                      : 'transparent',
+                    border: pillar ? 'none' : '1.5px dashed #D4D0CA',
+                    textAlign: 'center',
+                  }}
+                >
+                  {/* 오행 dot */}
+                  {pillar && (
+                    <span
+                      style={{
+                        position: 'absolute',
+                        top: 6,
+                        right: 6,
+                        width: 7,
+                        height: 7,
+                        borderRadius: '50%',
+                        background: chHex,
+                        display: 'inline-block',
+                      }}
+                    />
+                  )}
+
+                  {/* 기둥 라벨 */}
+                  <p
+                    style={{
+                      fontSize: 9,
+                      fontWeight: 700,
+                      color: isDay ? 'rgba(255,255,255,0.5)' : '#B0ADBA',
+                      marginBottom: 4,
+                      letterSpacing: '0.02em',
+                    }}
+                  >
+                    {label}
+                  </p>
+
+                  {pillar ? (
+                    <>
+                      {/* 천간 한자 */}
+                      <p
+                        style={{
+                          fontSize: 22,
+                          fontFamily: 'Noto Serif KR, Georgia, serif',
+                          fontWeight: 700,
+                          color: isDay ? '#FFFFFF' : '#1A1A2E',
+                          lineHeight: 1.1,
+                          marginBottom: 2,
+                        }}
+                      >
+                        {pillar.cheongan}
+                      </p>
+                      {/* 천간 한글·오행 */}
+                      <p
+                        style={{
+                          fontSize: 9,
+                          color: isDay ? 'rgba(255,255,255,0.55)' : '#6E6A7A',
+                          marginBottom: 4,
+                        }}
+                      >
+                        {pillar.cheonganKr}·{pillar.cheonganOhaeng}
+                      </p>
+
+                      {/* 구분선 */}
+                      <div
+                        style={{
+                          height: 1,
+                          background: isDay ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.07)',
+                          marginBottom: 4,
+                        }}
+                      />
+
+                      {/* 지지 한자 */}
+                      <p
+                        style={{
+                          fontSize: 18,
+                          fontFamily: 'Noto Serif KR, Georgia, serif',
+                          fontWeight: 600,
+                          color: isDay ? '#FFFFFF' : '#1A1A2E',
+                          lineHeight: 1.1,
+                          marginBottom: 2,
+                        }}
+                      >
+                        {pillar.jiji}
+                      </p>
+                      {/* 지지 한글·오행 */}
+                      <p
+                        style={{
+                          fontSize: 9,
+                          color: isDay ? 'rgba(255,255,255,0.55)' : '#6E6A7A',
+                        }}
+                      >
+                        {pillar.jijiKr}·{pillar.jijiOhaeng}
+                      </p>
+                    </>
+                  ) : (
+                    /* 시주 미입력 빈 카드 */
+                    <p
+                      style={{
+                        fontSize: 9,
+                        color: '#B0ADBA',
+                        marginTop: 16,
+                        lineHeight: 1.4,
+                      }}
+                    >
+                      시주
+                      <br />
+                      미입력
+                    </p>
+                  )}
+                </div>
+              )
+            })}
           </div>
 
           {/* 오행 강도 바 차트 */}

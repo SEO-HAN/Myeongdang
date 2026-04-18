@@ -1,0 +1,146 @@
+<h2>생년월일 입력 UX — 3가지 접근법</h2>
+<p class="subtitle">10년차 실리콘밸리 관점: 현재 UX의 핵심 문제는 연도 직접 입력의 불편함 + 31일 고정 그리드(해당 월 날수 초과 선택 가능) + 시간 24셀 터치 타겟 부족입니다.</p>
+
+<div class="cards">
+
+  <!-- Option A: 드럼 피커 -->
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding: 20px; background: #FAFAF8;">
+      <div style="font-size:11px; color:#C9973A; font-weight:700; letter-spacing:0.1em; margin-bottom:8px;">A — 드럼 피커 방식</div>
+      <!-- 모바일 모크업 -->
+      <div style="background:#fff; border-radius:16px; padding:16px; box-shadow:0 2px 12px rgba(0,0,0,0.08); max-width:280px; margin:0 auto;">
+        <p style="font-size:12px; color:#6E6A7A; text-align:center; margin-bottom:12px;">태어난 날짜</p>
+        <!-- 드럼 피커 시뮬레이션 -->
+        <div style="display:flex; gap:8px; justify-content:center; position:relative;">
+          <!-- 하이라이트 라인 -->
+          <div style="position:absolute; top:50%; left:0; right:0; height:36px; transform:translateY(-50%); background:#EEF2FB; border-radius:8px; z-index:0;"></div>
+          <!-- 연도 컬럼 -->
+          <div style="flex:2; text-align:center; position:relative; z-index:1; overflow:hidden; height:100px;">
+            <div style="color:#ccc; font-size:12px; padding:6px 0;">1991</div>
+            <div style="color:#ccc; font-size:12px; padding:6px 0;">1992</div>
+            <div style="color:#1A1A2E; font-size:16px; font-weight:700; padding:6px 0; background:#EEF2FB; border-radius:6px;">1993</div>
+            <div style="color:#ccc; font-size:12px; padding:6px 0;">1994</div>
+          </div>
+          <!-- 월 컬럼 -->
+          <div style="flex:1; text-align:center; position:relative; z-index:1; overflow:hidden; height:100px;">
+            <div style="color:#ccc; font-size:12px; padding:6px 0;">4월</div>
+            <div style="color:#ccc; font-size:12px; padding:6px 0;">5월</div>
+            <div style="color:#1A1A2E; font-size:16px; font-weight:700; padding:6px 0; background:#EEF2FB; border-radius:6px;">6월</div>
+            <div style="color:#ccc; font-size:12px; padding:6px 0;">7월</div>
+          </div>
+          <!-- 일 컬럼 -->
+          <div style="flex:1; text-align:center; position:relative; z-index:1; overflow:hidden; height:100px;">
+            <div style="color:#ccc; font-size:12px; padding:6px 0;">13일</div>
+            <div style="color:#ccc; font-size:12px; padding:6px 0;">14일</div>
+            <div style="color:#1A1A2E; font-size:16px; font-weight:700; padding:6px 0; background:#EEF2FB; border-radius:6px;">15일</div>
+            <div style="color:#ccc; font-size:12px; padding:6px 0;">16일</div>
+          </div>
+        </div>
+        <div style="margin-top:12px; background:#F3F3F0; border-radius:8px; padding:8px; text-align:center; font-size:12px; color:#C9973A; font-weight:600;">
+          1993년 6월 15일 ✓
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>드럼 피커 (Drum Roller)</h3>
+      <p>iOS 네이티브와 동일한 스크롤 UX. 연도·월·일을 한 화면에서 처리. 별도 키보드 팝업 없음.</p>
+      <div class="pros-cons" style="margin-top:8px;">
+        <div class="pros"><h4>장점</h4><ul><li>키보드 불필요</li><li>모바일 네이티브 느낌</li><li>실수 선택 방지</li></ul></div>
+        <div class="cons"><h4>단점</h4><ul><li>구현 복잡도 높음</li><li>웹 커스텀 피커 품질 차이</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Option B: 개선된 그리드 (현재 방식 업그레이드) -->
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding: 20px; background: #FAFAF8;">
+      <div style="font-size:11px; color:#C9973A; font-weight:700; letter-spacing:0.1em; margin-bottom:8px;">B — 스마트 그리드 (현재 개선)</div>
+      <div style="background:#fff; border-radius:16px; padding:16px; box-shadow:0 2px 12px rgba(0,0,0,0.08); max-width:280px; margin:0 auto;">
+        <!-- 연도 슬라이더 -->
+        <div style="margin-bottom:12px;">
+          <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+            <span style="font-size:10px; color:#C9973A; font-weight:700;">태어난 해</span>
+            <span style="font-size:14px; font-weight:700; color:#1A1A2E;">1993</span>
+          </div>
+          <div style="height:4px; background:#E8E4DC; border-radius:2px; position:relative;">
+            <div style="position:absolute; left:0; width:65%; height:100%; background:#1A1A2E; border-radius:2px;"></div>
+            <div style="position:absolute; left:65%; top:50%; transform:translate(-50%,-50%); width:16px; height:16px; background:#1A1A2E; border-radius:50%; border:2px solid #fff; box-shadow:0 0 0 2px #1A1A2E;"></div>
+          </div>
+          <div style="display:flex; justify-content:space-between; margin-top:2px;">
+            <span style="font-size:9px; color:#aaa;">1930</span>
+            <span style="font-size:9px; color:#aaa;">2026</span>
+          </div>
+        </div>
+        <!-- 월 그리드 (더 크게) -->
+        <div style="display:grid; grid-template-columns:repeat(6,1fr); gap:4px; margin-bottom:10px;">
+          {[1,2,3,4,5,6,7,8,9,10,11,12].map(m =>
+            `<div style="padding:6px 0; text-align:center; border-radius:8px; font-size:11px; font-weight:600;
+              ${m===6 ? 'background:#1A1A2E;color:#fff;' : 'background:#F3F3F0;color:#444;'}">${m}월</div>`
+          ).join('')}
+        </div>
+        <!-- 일 그리드 (해당 월 날수만 표시: 6월=30일) -->
+        <div style="display:grid; grid-template-columns:repeat(7,1fr); gap:3px;">
+          ${Array.from({length:30},(_,i)=>i+1).map(d=>
+            `<div style="aspect-ratio:1; display:flex; align-items:center; justify-content:center; border-radius:6px; font-size:11px; font-weight:600;
+              ${d===15 ? 'background:#1A1A2E;color:#fff;' : 'background:#F3F3F0;color:#444;'}">${d}</div>`
+          ).join('')}
+        </div>
+        <div style="margin-top:8px; font-size:10px; color:#6E6A7A; text-align:center;">6월은 30일까지만 표시</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>스마트 그리드 (현재 방식 업그레이드)</h3>
+      <p>연도를 슬라이더로 변경. 해당 월의 실제 날수만 표시. 터치 타겟 최소 44px 보장.</p>
+      <div class="pros-cons" style="margin-top:8px;">
+        <div class="pros"><h4>장점</h4><ul><li>현재 코드 재활용 용이</li><li>빠른 구현 가능</li><li>날짜 오류 방지</li></ul></div>
+        <div class="cons"><h4>단점</h4><ul><li>슬라이더로 정확 연도 찾기 번거로움</li><li>여전히 3개 섹션 스크롤 필요</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Option C: 달력 + 시간 슬라이더 -->
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding: 20px; background: #FAFAF8;">
+      <div style="font-size:11px; color:#C9973A; font-weight:700; letter-spacing:0.1em; margin-bottom:8px;">C — 미니 캘린더 + 연도 직접입력 개선</div>
+      <div style="background:#fff; border-radius:16px; padding:16px; box-shadow:0 2px 12px rgba(0,0,0,0.08); max-width:280px; margin:0 auto;">
+        <!-- 연도 입력 개선: 큰 버튼 +/- -->
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; background:#F3F3F0; border-radius:12px; padding:8px 12px;">
+          <button style="width:32px; height:32px; border-radius:8px; background:#1A1A2E; color:#fff; font-size:18px; border:none; font-weight:bold; line-height:1;">−</button>
+          <span style="font-size:22px; font-weight:700; color:#1A1A2E;">1993</span>
+          <button style="width:32px; height:32px; border-radius:8px; background:#1A1A2E; color:#fff; font-size:18px; border:none; font-weight:bold; line-height:1;">+</button>
+        </div>
+        <!-- 월 탭 -->
+        <div style="display:flex; gap:3px; overflow-x:auto; margin-bottom:10px; padding-bottom:4px;">
+          ${['1','2','3','4','5','6월✓','7','8','9','10','11','12'].map((m,i)=>
+            `<div style="padding:5px 8px; border-radius:8px; font-size:10px; font-weight:600; white-space:nowrap; flex-shrink:0;
+              ${i===5 ? 'background:#1A1A2E;color:#fff;' : 'background:#F3F3F0;color:#444;'}">${m}</div>`
+          ).join('')}
+        </div>
+        <!-- 미니 달력 -->
+        <div style="display:grid; grid-template-columns:repeat(7,1fr); gap:2px; text-align:center;">
+          ${['일','월','화','수','목','금','토'].map(d=>`<div style="font-size:9px;color:#aaa;padding:2px 0;">${d}</div>`).join('')}
+          ${[' ',' ',' ','1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30'].map((d,i)=>
+            `<div style="aspect-ratio:1; display:flex; align-items:center; justify-content:center; border-radius:50%; font-size:10px; font-weight:${d==='15'?'700':'500'};
+              ${d==='15' ? 'background:#1A1A2E;color:#fff;' : d===' ' ? '' : 'color:#1A1A2E;'}">${d}</div>`
+          ).join('')}
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>미니 캘린더 + ± 연도 버튼</h3>
+      <p>연도는 +/- 버튼으로 조작. 달력 형태로 일 선택. 가장 범용적이고 직관적인 UI.</p>
+      <div class="pros-cons" style="margin-top:8px;">
+        <div class="pros"><h4>장점</h4><ul><li>가장 친숙한 패턴</li><li>요일 확인 가능</li><li>날짜 실수 없음</li></ul></div>
+        <div class="cons"><h4>단점</h4><ul><li>±1씩 연도 이동 느림</li><li>달력 렌더링 복잡도</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div style="margin-top:20px; padding:16px; background:#FFF8F0; border-radius:12px; border-left:3px solid #C9973A;">
+  <p style="margin:0; font-size:13px; color:#6E6A7A;"><strong style="color:#1A1A2E;">현재 UX 핵심 문제점:</strong><br>
+  ① 연도 직접 입력 시 숫자 키보드 팝업 → 폼이 가려짐<br>
+  ② 일 그리드 31개 고정 → 2월 29일, 30일, 31일 선택 가능 (잘못된 날짜)<br>
+  ③ 시간 24셀이 너무 작아 터치 실수 발생 가능 (현재 ~36px, 권장 44px)</p>
+</div>

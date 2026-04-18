@@ -86,6 +86,11 @@ export interface SajuInput {
    * 미입력 시 시주(時柱) 계산 생략
    */
   hour?: number;
+  /**
+   * 출생 분 (0~59)
+   * 시주 경계값 정밀 처리용 (야자시 등 향후 확장 대비)
+   */
+  minute?: number;
   /** 성별 (향후 용신 계산에 활용) */
   gender?: 'male' | 'female';
 }

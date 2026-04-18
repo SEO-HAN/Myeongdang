@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
   const body = await req.json() as SajuInput
 
   // ── 입력 검증 ──
-  const { year, month, day, hour, gender } = body
+  const { year, month, day, hour, minute, gender } = body
   if (!year || !month || !day) {
     return NextResponse.json(
       { error: '생년월일을 입력해주세요.' },
@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
   }
 
   // ── 사주 계산 ──
-  const result = calculateSaju({ year, month, day, hour, gender })
+  const result = calculateSaju({ year, month, day, hour, minute, gender })
 
   // ── DB 저장 (로그인 세션이 있을 때만) ──
   try {

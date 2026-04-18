@@ -97,11 +97,41 @@ if [ "$SMALL_TOUCH_COUNT" -gt 0 ]; then
   CONTEXT+="   모바일 UX 기준 44px(h-11) 이상 권장 (클릭 영역 확인 필요)\n\n"
 fi
 
+# ── 6. WORKLOG.md / MASTERPLAN.md 업데이트 체크 ────────────────
+# 코드 파일이 WORKLOG.md보다 최신이면 로그 업데이트 강제
+if [ -f "$PROJECT_DIR/WORKLOG.md" ]; then
+  STALE_CODE_FILES=$(find "$PROJECT_DIR" \
+    \( -name "*.ts" -o -name "*.tsx" \) \
+    ! -path "*/node_modules/*" ! -path "*/.next/*" \
+    -newer "$PROJECT_DIR/WORKLOG.md" 2>/dev/null | wc -l | tr -d ' ')
+
+  if [ "$STALE_CODE_FILES" -gt 3 ]; then
+    SHOULD_BLOCK=true
+    CHANGED_SAMPLE=$(find "$PROJECT_DIR" \( -name "*.ts" -o -name "*.tsx" \) \
+      ! -path "*/node_modules/*" ! -path "*/.next/*" \
+      -newer "$PROJECT_DIR/WORKLOG.md" 2>/dev/null \
+      | sed "s|$PROJECT_DIR/||" | head -5 | tr '\n' ',' | sed 's/,$//')
+    CONTEXT+="📝 WORKLOG.md 업데이트 필요 (${STALE_CODE_FILES}개 코드 파일 변경됨)\n"
+    CONTEXT+="   변경된 파일 예시: ${CHANGED_SAMPLE}\n"
+    CONTEXT+="→ 완료 전 반드시:\n"
+    CONTEXT+="  1. WORKLOG.md에 이번 세션 작업 로그 추가 (### YYYY-MM-DD | 제목)\n"
+    CONTEXT+="  2. MASTERPLAN.md에서 완료 항목 [x] 체크\n\n"
+  fi
+fi
+
 # ── 블록 또는 컨텍스트 제공 ──────────────────────────────────
 if [ "$SHOULD_BLOCK" = true ]; then
-  printf '%s' "$CONTEXT" | jq -Rs '{
+  BLOCK_REASON="CI 게이트: 완료 전 수정이 필요합니다."
+  if echo "$CONTEXT" | grep -q "TypeScript 오류"; then
+    BLOCK_REASON="CI 게이트: TypeScript 오류가 해결되지 않았습니다."
+  elif echo "$CONTEXT" | grep -q "WORKLOG.md 업데이트 필요"; then
+    BLOCK_REASON="CI 게이트: WORKLOG.md와 MASTERPLAN.md를 업데이트한 후 완료하세요."
+  elif echo "$CONTEXT" | grep -q "'use client' 누락"; then
+    BLOCK_REASON="CI 게이트: 'use client' 누락 컴포넌트를 수정하세요."
+  fi
+  printf '%s' "$CONTEXT" | jq -Rs --arg reason "$BLOCK_REASON" '{
     decision: "block",
-    reason: "CI 게이트: TypeScript 오류가 해결되지 않았습니다.",
+    reason: $reason,
     hookSpecificOutput: {
       hookEventName: "Stop",
       additionalContext: .
